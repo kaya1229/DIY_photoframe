@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>BOOTH 4 CUTS</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* 부스 키오스크 테마: 다크 & 네온 */
+  --bg: #0a0a0a;
+  --card: #151515;
+  --accent: #ff007a; /* 핫핑크 */
+  --neon-blue: #00f3ff;
+  --text: #ffffff;
+  --text-dim: #888888;
+  --border: #222222;
+  --sh: 0 0 20px rgba(255, 0, 122, 0.2);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family: 'Pretendard', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* 배경 그라데이션 - 부스 내부 조명 느낌 */
+body::before {
+  content:''; position:fixed; inset:0; z-index:0;
+  background: 
+    radial-gradient(circle at 10% 10%, rgba(255,0,122,0.05) 0%, transparent 50%),
+    radial-gradient(circle at 90% 90%, rgba(0,243,255,0.05) 0%, transparent 50%);
+}
+
+.app { position:relative; z-index:1; max-width:500px; margin:0 auto; padding:20px 16px 100px; }
+
+/* 헤더 - 기계적인 로고 */
+.hd { display:flex; justify-content:space-between; align-items:center; padding:10px 0 30px; }
+.logo { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; letter-spacing: 2px; color: var(--accent); text-shadow: var(--sh); }
+.hd-album { 
+  background: transparent; border: 1px solid var(--border); color: var(--text); 
+  padding: 8px 16px; border-radius: 4px; font-size: 0.8rem; cursor: pointer;
+}
+
+/* 스텝 바 - 더 직관적으로 */
+.steps { display:flex; gap:8px; margin-bottom:24px; }
+.si { flex:1; height:4px; background:var(--border); border-radius:2px; transition:0.3s; }
+.si.on { background: var(--accent); box-shadow: var(--sh); }
+.si.dn { background: #444; }
+
+/* 카드 스타일 */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+.card-lbl { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); margin-bottom: 16px; letter-spacing: 1px; }
+
+/* 버튼 - 물리적인 느낌 */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 14px 24px; border-radius: 4px; font-weight: 800; font-size: 0.9rem;
+  border: none; cursor: pointer; transition: 0.2s; font-family: inherit;
+}
+.btn-p { background: var(--accent); color: white; box-shadow: 0 4px 0 #990049; }
+.btn-p:active { transform: translateY(2px); box-shadow: 0 2px 0 #990049; }
+.btn-p:disabled { background: #444; box-shadow: none; opacity: 0.5; }
+.btn-g { background: #222; color: #fff; border: 1px solid #333; }
+
+/* 업로드 영역 */
+.upload-area { border: 2px dashed #333; padding: 40px 20px; text-align: center; border-radius: 8px; cursor: pointer; }
+.upload-area:hover { border-color: var(--accent); background: #1a1a1a; }
+
+/* 카메라 & 슬롯 - 모니터 프레임 */
+#cam-wrap { 
+  position:relative; background:#000; border: 4px solid #222; border-radius: 4px; overflow: hidden;
+  box-shadow: inset 0 0 50px rgba(0,0,0,1);
+}
+#video { width: 100%; display: block; filter: contrast(1.1) brightness(1.05); }
+#cam-cv { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+#cam-cd { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:6rem; font-family:'Orbitron'; color:var(--accent); opacity:0; }
+
+/* 필름 프리뷰 - 수평 스크롤 */
+#result-wrap { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 20px; }
+.film-card { flex-shrink: 0; border: 2px solid transparent; transition: 0.2s; cursor: pointer; }
+.film-card.picked { border-color: var(--accent); transform: scale(1.02); }
+
+/* 모달 - 슬롯 확대 */
+.slot-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:500; align-items:center; justify-content:center; padding:20px; }
+.slot-modal-bg.open { display:flex; }
+.slot-modal { background:var(--card); border:1px solid var(--border); border-radius:8px; width:100%; max-width:400px; padding:20px; }
+.slot-modal-canvas { width:100%; background:#000; position:relative; overflow:hidden; margin-bottom:15px; }
+
+/* 드래그 요소 선택 시 네온 효과 */
+.cdrag.sel { outline: 2px solid var(--neon-blue) !important; box-shadow: 0 0 10px var(--neon-blue); }
+
+/* 기타 유틸 */
+input[type=file] { display:none; }
+.row { display:flex; gap:10px; align-items:center; }
+.btw { justify-content: space-between; }
+.center { justify-content: center; }
+.mt { margin-top: 15px; }
+.screen { display:none; }
+.screen.active { display:block; animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 앨범 */
+.album-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.album-item { background: var(--card); border: 1px solid var(--border); padding: 5px; border-radius: 4px; }
+.album-item img { width: 100%; display: block; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hd">
+    <div class="logo">BOOTH 4</div>
+    <button class="hd-album" onclick="goTo(4)">ALBUM</button>
+  </div>
+
+  <div class="steps">
+    <div class="si on" id="si0"></div>
+    <div class="si" id="si1"></div>
+    <div class="si" id="si2"></div>
+    <div class="si" id="si3"></div>
+  </div>
+
+  <div class="screen active" id="sc0">
+    <div class="card">
+      <div class="card-lbl">UPLOAD CELEBRITY PNG</div>
+      <label for="celebInput">
+        <div class="upload-area">
+          <div style="font-size:2rem; margin-bottom:10px;">💾</div>
+          <p style="font-weight:600;">클릭하여 누끼 이미지 업로드</p>
+          <p style="font-size:0.75rem; color:var(--text-dim); margin-top:5px;">배경이 투명한 PNG 파일을 권장합니다</p>
+        </div>
+      </label>
+      <input type="file" id="celebInput" accept="image/*" multiple>
+      <div id="celeb-strip" class="row mt" style="overflow-x:auto; padding-bottom:10px;"></div>
+      <button class="btn btn-p mt" id="btn0" style="width:100%" disabled onclick="goTo(1)">프레임 배치하기 →</button>
+    </div>
+  </div>
+
+  <div class="screen" id="sc1">
+    <div class="card">
+      <div class="card-lbl">ARRANGE SLOTS</div>
+      <div id="frame-builder" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div class="fslot" id="fs0" onclick="openSlotModal(0)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
+        <div class="fslot" id="fs1" onclick="openSlotModal(1)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
+        <div class="fslot" id="fs2" onclick="openSlotModal(2)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
+        <div class="fslot" id="fs3" onclick="openSlotModal(3)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
+      </div>
+      <p style="font-size:0.75rem; color:var(--text-dim); margin-top:12px; text-align:center;">각 칸을 클릭하여 연예인을 배치하세요.</p>
+      <div class="row btw mt">
+        <button class="btn btn-g" onclick="fullReset()">RESET</button>
+        <button class="btn btn-p" onclick="goTo(2)">촬영 시작 →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="sc2">
+    <div class="card">
+      <div class="btw row" style="margin-bottom:15px;">
+        <div class="card-lbl" id="shot-lbl" style="margin:0">0 / 4 SHOTS</div>
+        <div id="filter-pills" class="row" style="gap:5px;">
+          <button class="btn btn-g" style="padding:4px 8px; font-size:0.7rem;" onclick="setFilter('none')">ORIGIN</button>
+          <button class="btn btn-g" style="padding:4px 8px; font-size:0.7rem;" onclick="setFilter('mono')">B&W</button>
+        </div>
+      </div>
+      <div id="cam-wrap">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="cam-cv"></canvas>
+        <div id="cam-cd"></div>
+      </div>
+      <div class="row center mt" id="thumb-row" style="gap:5px;">
+        <div style="width:50px; height:35px; background:#222; border-radius:2px;" class="th-box"></div>
+        <div style="width:50px; height:35px; background:#222; border-radius:2px;" class="th-box"></div>
+        <div style="width:50px; height:35px; background:#222; border-radius:2px;" class="th-box"></div>
+        <div style="width:50px; height:35px; background:#222; border-radius:2px;" class="th-box"></div>
+      </div>
+      <div class="row btw mt">
+        <button class="btn btn-g" onclick="goTo(1)">PREV</button>
+        <button class="btn btn-p" id="btn-shoot" onclick="shoot()">📸 SHOOT</button>
+        <button class="btn btn-p" id="btn-done" style="display:none;" onclick="goTo(3)">RESULT →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="sc3">
+    <div class="card">
+      <div class="card-lbl">SELECT YOUR FILM</div>
+      <div id="result-wrap"></div>
+      <div class="row btw mt">
+        <button class="btn btn-g" onclick="reshot()">RE-SHOOT</button>
+        <button class="btn btn-p" onclick="dlPicked()">DOWNLOAD</button>
+      </div>
+      <button class="btn btn-g mt" style="width:100%; color:var(--accent);" onclick="saveToAlbum()">SAVE TO ALBUM</button>
+    </div>
+  </div>
+
+  <div class="screen" id="sc4">
+    <div class="card">
+      <div class="card-lbl">MY GALLERY</div>
+      <div id="album-grid" class="album-grid"></div>
+      <button class="btn btn-g mt" style="width:100%" onclick="goTo(0)">BACK TO HOME</button>
+    </div>
+  </div>
+</div>
+
+<div class="slot-modal-bg" id="slot-modal">
+  <div class="slot-modal">
+    <div class="card-lbl">EDIT SLOT</div>
+    <div class="slot-modal-canvas" id="slot-modal-canvas"></div>
+    <div class="row center mt" id="modal-picker" style="overflow-x:auto; padding:10px 0;"></div>
+    <div class="row btw mt">
+      <button class="btn btn-g" onclick="clearModalSlot()">CLEAR</button>
+      <button class="btn btn-p" onclick="closeSlotModal()">DONE</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="hc" style="display:none"></canvas>
+
+<script>
+/* ── STATE & CONFIG ── */
+const S = {
+  celebs: [],
+  slots: [[],[],[],[]],
+  shots: [null,null,null,null],
+  cur: 0,
+  filter: 'none',
+  modalSlot: null,
+  picked: new Set(),
+  album: JSON.parse(localStorage.getItem('booth_album') || '[]')
+};
+
+const FILTERS = {
+  none: '',
+  mono: 'grayscale(1) contrast(1.2)',
+  warm: 'sepia(0.3) contrast(1.1)',
+};
+
+/* ── NAVIGATION ── */
+function goTo(n) {
+  document.querySelectorAll('.screen').forEach((s, i) => s.classList.toggle('active', i === n));
+  document.querySelectorAll('.si').forEach((s, i) => {
+    s.classList.toggle('on', i === n);
+    s.classList.toggle('dn', i < n);
+  });
+  if(n === 2) initCam();
+  if(n === 3) buildResult();
+  if(n === 4) renderAlbum();
+}
+
+/* ── STEP 0: UPLOAD ── */
+document.getElementById('celebInput').addEventListener('change', e => {
+  [...e.target.files].forEach(f => {
+    const img = new Image();
+    img.onload = () => {
+      S.celebs.push({ img, name: f.name });
+      renderStrip();
+      document.getElementById('btn0').disabled = false;
+    };
+    img.src = URL.createObjectURL(f);
+  });
+});
+
+function renderStrip() {
+  const strip = document.getElementById('celeb-strip');
+  strip.innerHTML = S.celebs.map((c, i) => `<img src="${c.img.src}" style="height:60px; border:1px solid #333; border-radius:4px;">`).join('');
+}
+
+/* ── STEP 1: FRAME EDITOR ── */
+function openSlotModal(idx) {
+  S.modalSlot = idx;
+  const canvas = document.getElementById('slot-modal-canvas');
+  canvas.style.aspectRatio = "4/3";
+  renderModalCanvas();
+  renderModalPicker();
+  document.getElementById('slot-modal').classList.add('open');
+}
+
+function renderModalPicker() {
+  const picker = document.getElementById('modal-picker');
+  picker.innerHTML = S.celebs.map((c, i) => `
+    <img src="${c.img.src}" onclick="addToSlot(${i})" style="height:50px; cursor:pointer; border:1px solid #444;">
+  `).join('');
+}
+
+function addToSlot(ci) {
+  S.slots[S.modalSlot].push({ ci, x: 25, y: 10, w: 50 });
+  renderModalCanvas();
+}
+
+function closeSlotModal() {
+  renderMiniSlot(S.modalSlot);
+  document.getElementById('slot-modal').classList.remove('open');
+}
+
+function clearModalSlot() {
+  S.slots[S.modalSlot] = [];
+  renderModalCanvas();
+}
+
+function renderModalCanvas() {
+  const container = document.getElementById('slot-modal-canvas');
+  container.innerHTML = '';
+  S.slots[S.modalSlot].forEach((item, i) => {
+    const cel = S.celebs[item.ci];
+    const el = document.createElement('div');
+    el.className = 'cdrag';
+    el.style.position = 'absolute';
+    el.style.left = item.x + '%';
+    el.style.top = item.y + '%';
+    el.style.width = item.w + '%';
+    el.style.cursor = 'move';
+    
+    const img = document.createElement('img');
+    img.src = cel.img.src;
+    img.style.width = '100%';
+    img.draggable = false;
+    
+    el.appendChild(img);
+    container.appendChild(el);
+
+    // Basic Drag Logic
+    el.onmousedown = (e) => {
+      let sx = e.clientX, sy = e.clientY;
+      document.onmousemove = (ev) => {
+        const dx = ev.clientX - sx, dy = ev.clientY - sy;
+        item.x += (dx / container.offsetWidth) * 100;
+        item.y += (dy / container.offsetHeight) * 100;
+        el.style.left = item.x + '%';
+        el.style.top = item.y + '%';
+        sx = ev.clientX; sy = ev.clientY;
+      };
+      document.onmouseup = () => document.onmousemove = null;
+    };
+  });
+}
+
+function renderMiniSlot(idx) {
+  const fs = document.getElementById(`fs${idx}`);
+  fs.innerHTML = '';
+  S.slots[idx].forEach(item => {
+    const img = document.createElement('img');
+    img.src = S.celebs[item.ci].img.src;
+    img.style.position = 'absolute';
+    img.style.left = item.x + '%';
+    img.style.top = item.y + '%';
+    img.style.width = item.w + '%';
+    fs.appendChild(img);
+  });
+}
+
+/* ── STEP 2: CAMERA ── */
+async function initCam() {
+  const v = document.getElementById('video');
+  if (!S.stream) {
+    S.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+    v.srcObject = S.stream;
+  }
+  drawOverlay();
+}
+
+function drawOverlay() {
+  const oc = document.getElementById('cam-cv'), ctx = oc.getContext('2d'), v = document.getElementById('video');
+  function step() {
+    if(v.videoWidth) {
+      oc.width = v.videoWidth; oc.height = v.videoHeight;
+      ctx.clearRect(0,0,oc.width,oc.height);
+      S.slots[S.cur].forEach(item => {
+        const cel = S.celebs[item.ci];
+        const w = oc.width * (item.w/100);
+        const h = w * (cel.img.height/cel.img.width);
+        ctx.drawImage(cel.img, oc.width*(item.x/100), oc.height*(item.y/100), w, h);
+      });
+    }
+    S.raf = requestAnimationFrame(step);
+  }
+  step();
+}
+
+async function shoot() {
+  if (S.cur >= 4) return;
+  const cd = document.getElementById('cam-cd');
+  cd.style.opacity = 1;
+  for(let i=3; i>0; i--) { cd.textContent = i; await new Promise(r=>setTimeout(r, 800)); }
+  cd.style.opacity = 0;
+
+  const v = document.getElementById('video'), hc = document.getElementById('hc'), ctx = hc.getContext('2d');
+  hc.width = v.videoWidth; hc.height = v.videoHeight;
+  
+  ctx.filter = FILTERS[S.filter];
+  ctx.save(); ctx.scale(-1, 1); ctx.drawImage(v, -hc.width, 0, hc.width, hc.height); ctx.restore();
+  ctx.filter = 'none';
+  ctx.drawImage(document.getElementById('cam-cv'), 0, 0);
+
+  S.shots[S.cur] = hc.toDataURL('image/jpeg', 0.9);
+  const thumbs = document.querySelectorAll('.th-box');
+  thumbs[S.cur].innerHTML = `<img src="${S.shots[S.cur]}" style="width:100%; height:100%; object-fit:cover;">`;
+  
+  S.cur++;
+  document.getElementById('shot-lbl').textContent = `${S.cur} / 4 SHOTS`;
+  if(S.cur === 4) {
+    document.getElementById('btn-shoot').style.display = 'none';
+    document.getElementById('btn-done').style.display = 'inline-flex';
+  }
+}
+
+/* ── STEP 3: REALISTIC RESULT BUILDER ── */
+async function buildResult() {
+  const wrap = document.getElementById('result-wrap');
+  wrap.innerHTML = '';
+  
+  // 테마 설정 (현실적인 인화지 색상)
+  const themes = [
+    { name: 'CLASSIC BLACK', bg: '#111', text: '#eee', slotBg: '#000' },
+    { name: 'PURE WHITE', bg: '#fff', text: '#111', slotBg: '#f0f0f0' }
+  ];
+
+  for(let t of themes) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const FW = 400, PAD = 20, GAP = 10, SW = FW - (PAD * 2), SH = SW * 0.75;
+    const FOOTER = 80;
+    canvas.width = FW;
+    canvas.height = (PAD * 2) + (SH * 4) + (GAP * 3) + FOOTER;
+
+    // 1. 배경 그리기 (미세한 종이 질감)
+    ctx.fillStyle = t.bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 2. 사진 넣기
+    for(let i=0; i<4; i++) {
+      const y = PAD + (i * (SH + GAP));
+      ctx.fillStyle = t.slotBg;
+      ctx.fillRect(PAD, y, SW, SH);
+      if(S.shots[i]) {
+        const img = await loadImage(S.shots[i]);
+        ctx.drawImage(img, PAD, y, SW, SH);
+      }
+    }
+
+    // 3. 현실적인 효과: 노이즈/입자감 추가 (Grain Effect)
+    addGrain(ctx, canvas.width, canvas.height);
+
+    // 4. 푸터 로고 & 날짜
+    ctx.fillStyle = t.text;
+    ctx.font = 'bold 18px "Orbitron"';
+    ctx.textAlign = 'center';
+    ctx.fillText('STUDIO BOOTH 4', FW/2, canvas.height - 45);
+    
+    ctx.font = '12px "Pretendard"';
+    ctx.globalAlpha = 0.5;
+    ctx.fillText(new Date().toLocaleDateString(), FW/2, canvas.height - 25);
+    ctx.globalAlpha = 1.0;
+
+    const div = document.createElement('div');
+    div.className = 'film-card';
+    canvas.style.width = '160px';
+    div.appendChild(canvas);
+    div.onclick = () => {
+      div.classList.toggle('picked');
+      S.picked.has(t.name) ? S.picked.delete(t.name) : S.picked.add(t.name);
+    };
+    wrap.appendChild(div);
+  }
+}
+
+function addGrain(ctx, w, h) {
+  const imgData = ctx.getImageData(0,0,w,h), d = imgData.data;
+  for (let i=0; i<d.length; i+=4) {
+    const r = (Math.random() - 0.5) * 15;
+    d[i] += r; d[i+1] += r; d[i+2] += r;
+  }
+  ctx.putImageData(imgData, 0, 0);
+}
+
+function loadImage(src) {
+  return new Promise(res => { const img = new Image(); img.onload = () => res(img); img.src = src; });
+}
+
+/* ── ALBUM & DOWNLOAD ── */
+function saveToAlbum() {
+  const cards = document.querySelectorAll('.film-card.picked canvas');
+  cards.forEach(c => S.album.push(c.toDataURL('image/jpeg', 0.9)));
+  localStorage.setItem('booth_album', JSON.stringify(S.album));
+  alert('앨범에 저장되었습니다!');
+}
+
+function renderAlbum() {
+  const grid = document.getElementById('album-grid');
+  grid.innerHTML = S.album.map(data => `<div class="album-item"><img src="${data}"></div>`).join('');
+}
+
+function dlPicked() {
+  const cards = document.querySelectorAll('.film-card.picked canvas');
+  cards.forEach((c, i) => {
+    const link = document.createElement('a');
+    link.download = `booth4cuts_${Date.now()}_${i}.jpg`;
+    link.href = c.toDataURL('image/jpeg', 0.9);
+    link.click();
+  });
+}
+
+function fullReset() { location.reload(); }
+function reshot() { S.cur = 0; S.shots = [null,null,null,null]; goTo(2); }
+function setFilter(f) { S.filter = f; document.getElementById('video').style.filter = FILTERS[f]; }
+</script>
+</body>
+</html>
