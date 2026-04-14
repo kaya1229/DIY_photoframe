@@ -3,57 +3,115 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>BOOTH 4 CUTS</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+<title>MY DIARY BOOTH</title>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0a0a0a; --card: #151515; --accent: #ff007a; --text: #ffffff;
-  --text-dim: #888888; --border: #222222; --sh: 0 0 20px rgba(255, 0, 122, 0.4);
+  --bg: #f8f5f0;           /* 따뜻한 종이색 */
+  --card: #ffffff;         /* 속지 흰색 */
+  --accent: #ffb5a7;       /* 마스킹 테이프 핑크 */
+  --text: #4a4a4a;         /* 연필 회색 */
+  --text-dim: #999999;
+  --border: #e2ddd3;
+  --note-line: #efede5;    /* 노트 모눈선 */
 }
+
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+body { 
+  font-family: 'Pretendard', sans-serif; 
+  background-color: var(--bg); 
+  background-image: radial-gradient(var(--note-line) 1px, transparent 1px);
+  background-size: 20px 20px; /* 모눈종이 배경 */
+  color: var(--text); 
+  min-height: 100vh; 
+}
+
 .app { position:relative; max-width:500px; margin:0 auto; padding: 20px 16px 100px; }
 
 /* UI Headers */
 .hd { display:none; justify-content:space-between; align-items:center; padding:10px 0 30px; }
-.logo { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; letter-spacing: 2px; color: var(--accent); text-shadow: var(--sh); cursor:pointer; }
+.logo { font-family: 'Gaegu', cursive; font-size: 1.8rem; font-weight: 700; color: #d4a373; cursor:pointer; }
 .steps { display:none; gap:8px; margin-bottom:24px; }
-.si { flex:1; height:4px; background:var(--border); border-radius:2px; }
-.si.on { background: var(--accent); box-shadow: var(--sh); }
-.si.dn { background: #444; }
+.si { flex:1; height:6px; background:var(--border); border-radius:10px; }
+.si.on { background: var(--accent); }
+.si.dn { background: #d4a373; opacity: 0.4; }
 
 /* Cards & Buttons */
-.card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
-.card-lbl { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); margin-bottom: 16px; letter-spacing: 1px; text-transform: uppercase; }
-.btn { display: inline-flex; align-items: center; justify-content: center; padding: 14px 24px; border-radius: 4px; font-weight: 800; font-size: 0.9rem; border: none; cursor: pointer; transition: 0.2s; }
-.btn-p { background: var(--accent); color: white; box-shadow: 0 4px 0 #990049; }
-.btn-p:active { transform: translateY(2px); box-shadow: 0 2px 0 #990049; }
-.btn-p:disabled { background: #444; box-shadow: none; opacity: 0.5; }
-.btn-g { background: #222; color: #fff; border: 1px solid #333; }
+.card { 
+  background: var(--card); 
+  border-radius: 2px; 
+  padding: 20px; 
+  margin-bottom: 16px; 
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.05); 
+  border: 1px solid var(--border);
+}
+.card-lbl { font-family: 'Gaegu', cursive; font-size: 1rem; font-weight: 700; color: #bc8a5f; margin-bottom: 16px; }
 
-/* Film Selection Styles */
-.film-card { flex-shrink: 0; border: 3px solid transparent; cursor: pointer; transition: 0.3s; padding: 4px; border-radius: 6px; }
-.film-card.picked { border-color: var(--accent); background: rgba(255, 0, 122, 0.1); box-shadow: var(--sh); transform: scale(1.02); }
+.btn { 
+  display: inline-flex; align-items: center; justify-content: center; 
+  padding: 12px 24px; border-radius: 2px; font-weight: 800; font-size: 0.9rem; 
+  border: none; cursor: pointer; transition: 0.2s;
+  font-family: 'Gaegu', cursive; font-size: 1.1rem;
+}
+.btn-p { 
+  background: var(--accent); color: white; 
+  box-shadow: 2px 2px 0px #f8ad9d; 
+  position: relative;
+}
+/* 마스킹 테이프 느낌을 위한 버튼 끝 처리 */
+.btn-p::before, .btn-p::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 8px;
+  background-size: 8px 8px;
+}
+.btn-p:active { transform: translate(1px, 1px); box-shadow: none; }
+.btn-p:disabled { background: #e0e0e0; box-shadow: none; color: #aaa; }
+.btn-g { background: #fdfdfd; color: var(--text); border: 1px solid var(--border); }
+
+/* Mode Selection */
+.mode-card { transition: 0.3s; background: white; }
+.mode-card.on { background: #fff9f8 !important; }
 
 /* Camera & Slot Grid */
-#cam-wrap { position:relative; background:#000; border: 4px solid #222; border-radius: 4px; overflow: hidden; width: 100%; }
+#cam-wrap { 
+  position:relative; background:#eee; border: 8px solid white; 
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 2px; overflow: hidden; 
+}
 #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-#cam-cv { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-#cam-cd { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:6rem; font-family:'Orbitron'; color:var(--accent); opacity:0; pointer-events:none; z-index:10; }
+#cam-cv { position:absolute; inset:0; pointer-events:none; }
+#cam-cd { 
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center; 
+  font-size:5rem; font-family:'Gaegu'; color:var(--accent); font-weight: 700;
+}
 
 .slot-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.fslot { border:1px solid #333; background:#000; position:relative; overflow:hidden; width:100%; cursor: pointer; }
+.fslot { 
+  border: 1px solid var(--border); background:#f9f9f9; 
+  position:relative; overflow:hidden; cursor: pointer;
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.02);
+}
 
-/* Archive Styles */
-.archive-preview { background:#000; border:1px solid #333; width:100%; position:relative; overflow:hidden; border-radius:4px; margin-bottom:8px; display: block; }
+/* Archive - Diary Style */
+.archive-item {
+  position: relative; background: white; padding: 10px;
+  border: 1px solid var(--border); box-shadow: 2px 2px 8px rgba(0,0,0,0.05);
+  transform: rotate(var(--r, 0deg)); /* 랜덤 회전 효과용 */
+}
+/* 마스킹 테이프 효과 */
+.tape {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  width: 60px; height: 20px; background: rgba(255, 181, 167, 0.6);
+  z-index: 10; border-left: 2px dashed rgba(0,0,0,0.1); border-right: 2px dashed rgba(0,0,0,0.1);
+}
 
-/* Modal & Interaction */
-.slot-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:500; align-items:center; justify-content:center; padding:20px; }
+.archive-preview { 
+  background:#000; width:100%; position:relative; overflow:hidden; display: block; 
+}
+
+/* Modal */
+.slot-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.3); backdrop-filter: blur(4px); z-index:500; align-items:center; justify-content:center; padding:20px; }
 .slot-modal-bg.open { display:flex; }
-.slot-modal { background:var(--card); border:1px solid var(--border); border-radius:8px; width:100%; max-width:400px; padding:20px; }
-.slot-modal-canvas { width:100%; background:#000; position:relative; overflow:hidden; margin-bottom:15px; border: 1px solid #333; touch-action: none; }
-.cdrag { position:absolute; user-select:none; will-change: transform, width, top, left; }
-.cdrag img { width:100%; display:block; pointer-events:none; }
+.slot-modal { background:var(--card); border:1px solid var(--border); border-radius:4px; width:100%; max-width:400px; padding:20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+.slot-modal-canvas { width:100%; background:#f0f0f0; position:relative; overflow:hidden; margin-bottom:15px; border: 1px solid var(--border); touch-action: none; }
 
 .screen { display:none; }
 .screen.active { display:block; }
@@ -62,14 +120,20 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 .mt { margin-top: 15px; }
 
 #home-screen { text-align: center; padding-top: 80px; }
-#home-screen h1 { font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 40px; color: var(--accent); text-shadow: var(--sh); }
+#home-screen h1 { font-family: 'Gaegu'; font-size: 3rem; margin-bottom: 10px; color: #d4a373; }
+#home-screen p { font-family: 'Gaegu'; font-size: 1.2rem; color: #bc8a5f; margin-bottom: 40px; }
+
+/* Film Card Picker */
+.film-card { border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.film-card.picked { border-color: var(--accent); transform: scale(1.05); }
+
 </style>
 </head>
 <body>
 <div class="app">
   <div class="hd" id="global-header">
-    <div class="logo" onclick="location.reload()">BOOTH 4</div>
-    <button class="btn btn-g" style="padding:5px 10px; font-size:0.7rem;" onclick="goTo('home')">HOME</button>
+    <div class="logo" onclick="location.reload()">Diary Booth</div>
+    <button class="btn btn-g" style="padding:5px 15px;" onclick="goTo('home')">HOME</button>
   </div>
 
   <div class="steps" id="step-bar">
@@ -77,51 +141,52 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
   </div>
 
   <div class="screen active" id="home-screen">
-    <h1>STUDIO<br>BOOTH 4</h1>
-    <button class="btn btn-p" style="width:100%; padding:25px; font-size:1.1rem; margin-bottom:12px;" onclick="goTo(0)">START SHOOTING</button>
-    <button class="btn btn-g" style="width:100%; padding:20px;" onclick="goTo(5)">FRAME ARCHIVE</button>
+    <h1>다이어리 네컷</h1>
+    <p>오늘의 기록을 스티커로 꾸며봐요</p>
+    <button class="btn btn-p" style="width:100%; padding:20px; font-size:1.4rem; margin-bottom:12px;" onclick="goTo(0)">촬영 시작하기</button>
+    <button class="btn btn-g" style="width:100%; padding:15px;" onclick="goTo(5)">나의 보관함</button>
   </div>
 
   <div class="screen" id="sc0">
   <div class="card">
-    <div class="card-lbl">0. SELECT FILM LAYOUT</div>
+    <div class="card-lbl">어떤 모양의 필름을 사용할까요?</div>
     <div class="row" style="gap:15px;">
-      <div class="mode-card on" id="m-v" onclick="setMode('v')" style="border:2px solid var(--accent); padding:15px; text-align:center; border-radius:8px; cursor:pointer; flex:1; background:rgba(255,0,122,0.05);">
-        <div style="width:30px; height:50px; border:2px solid #555; margin:0 auto 10px; display:flex; flex-direction:column; gap:2px; padding:3px;">
-          <div style="flex:1; background:#333;"></div><div style="flex:1; background:#333;"></div>
-          <div style="flex:1; background:#333;"></div><div style="flex:1; background:#333;"></div>
+      <div class="mode-card on" id="m-v" onclick="setMode('v')" style="border:1px solid var(--accent); padding:15px; text-align:center; border-radius:4px; cursor:pointer; flex:1;">
+        <div style="width:30px; height:50px; border:1px solid #ddd; margin:0 auto 10px; display:flex; flex-direction:column; gap:2px; padding:3px; background:#fff;">
+          <div style="flex:1; background:#f0f0f0;"></div><div style="flex:1; background:#f0f0f0;"></div>
+          <div style="flex:1; background:#f0f0f0;"></div><div style="flex:1; background:#f0f0f0;"></div>
         </div>
-        <div style="font-weight:800; font-size:0.8rem;">1 x 4</div>
+        <div style="font-weight:800; font-size:0.8rem;">1 x 4 (세로)</div>
       </div>
-      <div class="mode-card" id="m-q" onclick="setMode('q')" style="border:2px solid #222; padding:15px; text-align:center; border-radius:8px; cursor:pointer; flex:1;">
-        <div style="width:40px; height:40px; border:2px solid #555; margin:0 auto 10px; display:grid; grid-template-columns:1fr 1fr; gap:2px; padding:3px;">
-          <div style="background:#333;"></div><div style="background:#333;"></div>
-          <div style="background:#333;"></div><div style="background:#333;"></div>
+      <div class="mode-card" id="m-q" onclick="setMode('q')" style="border:1px solid var(--border); padding:15px; text-align:center; border-radius:4px; cursor:pointer; flex:1;">
+        <div style="width:40px; height:40px; border:1px solid #ddd; margin:0 auto 10px; display:grid; grid-template-columns:1fr 1fr; gap:2px; padding:3px; background:#fff;">
+          <div style="background:#f0f0f0;"></div><div style="background:#f0f0f0;"></div>
+          <div style="background:#f0f0f0;"></div><div style="background:#f0f0f0;"></div>
         </div>
-        <div style="font-weight:800; font-size:0.8rem;">2 x 2</div>
+        <div style="font-weight:800; font-size:0.8rem;">2 x 2 (쿼드)</div>
       </div>
     </div>
-    <button class="btn btn-p mt" style="width:100%" onclick="goTo(1)">NEXT →</button>
+    <button class="btn btn-p mt" style="width:100%" onclick="goTo(1)">다음으로 →</button>
   </div>
 </div>
 
   <div class="screen" id="sc1">
     <div class="card">
-      <div class="card-lbl">1. UPLOAD ELEMENTS</div>
+      <div class="card-lbl">꾸밀 스티커를 올려주세요</div>
       <label for="celebInput">
-        <div style="border: 2px dashed #333; padding: 40px 20px; text-align: center; border-radius: 8px; cursor: pointer;">
-          <p>PNG/GIF 업로드</p>
+        <div style="border: 2px dashed #dcd0c0; background: #fffcf9; padding: 40px 20px; text-align: center; border-radius: 4px; cursor: pointer;">
+          <p style="font-family:'Gaegu'; color:#a68a64;">PNG/GIF 이미지 선택</p>
         </div>
       </label>
       <input type="file" id="celebInput" accept="image/*" multiple style="display:none">
-      <div id="celeb-strip" class="row mt" style="overflow-x:auto;"></div>
-     <button class="btn btn-p mt" id="btn1" style="width:100%" onclick="goTo(2)">ARRANGE →</button>
+      <div id="celeb-strip" class="row mt" style="overflow-x:auto; padding: 10px 0;"></div>
+      <button class="btn btn-p mt" id="btn1" style="width:100%" onclick="goTo(2)">배치하러 가기 →</button>
     </div>
   </div>
 
   <div class="screen" id="sc2">
     <div class="card">
-      <div class="card-lbl">2. ARRANGE SLOTS (Tap to Edit)</div>
+      <div class="card-lbl">칸을 눌러 스티커를 배치하세요</div>
       <div id="slot-grid" class="slot-grid">
         <div class="fslot" id="fs0" onclick="openSlotModal(0)"></div>
         <div class="fslot" id="fs1" onclick="openSlotModal(1)"></div>
@@ -129,8 +194,8 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
         <div class="fslot" id="fs3" onclick="openSlotModal(3)"></div>
       </div>
       <div class="row mt">
-        <button class="btn btn-g" style="flex:1" onclick="saveFrameToAlbum()">SAVE</button>
-        <button class="btn btn-p" style="flex:2" onclick="goTo(3)">SHOOT →</button>
+        <button class="btn btn-g" style="flex:1" onclick="saveFrameToAlbum()">보관함 저장</button>
+        <button class="btn btn-p" style="flex:2" onclick="goTo(3)">촬영 시작 →</button>
       </div>
     </div>
   </div>
@@ -139,38 +204,38 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
     <div class="card">
       <div class="card-lbl" id="shot-lbl">0 / 4 SHOTS</div>
       <div id="cam-wrap"><video id="video" autoplay playsinline muted></video><canvas id="cam-cv"></canvas><div id="cam-cd"></div></div>
-      <button class="btn btn-p mt" id="btn-shoot" style="width:100%" onclick="shoot()">📸 SHOOT</button>
+      <button class="btn btn-p mt" id="btn-shoot" style="width:100%; font-size:1.3rem;">📸 찰칵!</button>
     </div>
   </div>
 
   <div class="screen" id="sc4">
     <div class="card">
-      <div class="card-lbl">CHOOSE YOUR FILM</div>
-      <div id="result-wrap" style="display:flex; gap:16px; overflow-x:auto; padding:10px 5px;"></div>
+      <div class="card-lbl">마음에 드는 색상을 골라보세요</div>
+      <div id="result-wrap" style="display:flex; gap:16px; overflow-x:auto; padding:15px 5px;"></div>
       <div class="row btw mt">
-        <button class="btn btn-g" onclick="reshot()">RE-SHOOT</button>
-        <button class="btn btn-p" id="btn-dl" disabled onclick="dlPicked()">DOWNLOAD</button>
+        <button class="btn btn-g" onclick="reshot()">다시 찍기</button>
+        <button class="btn btn-p" id="btn-dl" disabled onclick="dlPicked()">이미지 저장하기</button>
       </div>
     </div>
   </div>
 
   <div class="screen" id="sc5">
     <div class="card">
-      <div class="card-lbl" id="archive-lbl">ARCHIVE (0/10)</div>
-      <div id="album-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
-      <button class="btn btn-g mt" style="width:100%" onclick="goTo('home')">BACK</button>
+      <div class="card-lbl" id="archive-lbl">나의 다이어리 보관함 (0/10)</div>
+      <div id="album-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:20px; padding-top:10px;"></div>
+      <button class="btn btn-g mt" style="width:100%" onclick="goTo('home')">홈으로 돌아가기</button>
     </div>
   </div>
 </div>
 
 <div class="slot-modal-bg" id="slot-modal">
   <div class="slot-modal">
-    <div class="card-lbl">Move: Drag / Zoom: Pinch or Scroll</div>
+    <div class="card-lbl">자유롭게 꾸며보세요!</div>
     <div class="slot-modal-canvas" id="slot-modal-canvas"></div>
-    <div id="modal-picker" class="row" style="overflow-x:auto; padding-bottom:5px;"></div>
+    <div id="modal-picker" class="row" style="overflow-x:auto; padding-bottom:10px;"></div>
     <div class="row btw mt">
-      <button class="btn btn-g" onclick="clearModalSlot()">CLEAR</button>
-      <button class="btn btn-p" onclick="closeSlotModal()">DONE</button>
+      <button class="btn btn-g" onclick="clearModalSlot()">지우기</button>
+      <button class="btn btn-p" onclick="closeSlotModal()">완료</button>
     </div>
   </div>
 </div>
@@ -185,29 +250,25 @@ const S = {
 
 function setMode(m) {
   S.mode = m;
-  document.getElementById('m-v').style.borderColor = (m === 'v') ? 'var(--accent)' : '#222';
-  document.getElementById('m-q').style.borderColor = (m === 'q') ? 'var(--accent)' : '#222';
+  document.getElementById('m-v').style.borderColor = (m === 'v') ? 'var(--accent)' : 'var(--border)';
+  document.getElementById('m-q').style.borderColor = (m === 'q') ? 'var(--accent)' : 'var(--border)';
+  document.getElementById('m-v').classList.toggle('on', m === 'v');
+  document.getElementById('m-q').classList.toggle('on', m === 'q');
 }
 
 function goTo(n) {
   const screens = ['home-screen', 'sc0', 'sc1', 'sc2', 'sc3', 'sc4', 'sc5'];
   let idx = (n === 'home') ? 0 : (typeof n === 'number' ? n + 1 : 6);
   
-  // 1. 새로운 촬영 시작 시 데이터 초기화 (추가된 부분)
   if (n === 0) {
-    S.slots = [[], [], [], []]; // 슬롯 배치 초기화
-    S.shots = [null, null, null, null]; // 촬영된 이미지 초기화
-    S.cur = 0; // 현재 촬영 순서 초기화
-    S.celebs = []; // 업로드된 이미지 리스트 초기화 (필요 시)
-    
-    // UI에 반영 (슬롯 비우기 및 업로드 리스트 비우기)
+    S.slots = [[], [], [], []];
+    S.shots = [null, null, null, null];
+    S.cur = 0;
     for (let i = 0; i < 4; i++) renderMiniSlot(i);
-    renderStrip();
     document.getElementById('shot-lbl').textContent = `0 / 4 SHOTS`;
-    document.getElementById('btn1').disabled = false; // 업로드 단계 버튼 활성화 상태 유지
+    document.getElementById('btn1').disabled = false;
   }
 
-  // 화면 전환 로직
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(screens[idx]).classList.add('active');
   document.getElementById('global-header').style.display = (idx === 0) ? 'none' : 'flex';
@@ -229,9 +290,11 @@ function goTo(n) {
 async function initCam() {
   const v = document.getElementById('video');
   if (!S.stream) {
-    S.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
-    v.srcObject = S.stream;
-    v.onloadedmetadata = () => { S.camRatio = v.videoWidth / v.videoHeight; applyRatioToUI(); };
+    try {
+      S.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+      v.srcObject = S.stream;
+      v.onloadedmetadata = () => { S.camRatio = v.videoWidth / v.videoHeight; applyRatioToUI(); };
+    } catch(e) { alert("카메라를 사용할 수 없습니다."); }
   }
   startOverlay();
 }
@@ -242,28 +305,29 @@ function applyRatioToUI() {
   });
 }
 
-/* 1. Upload */
 document.getElementById('celebInput').onchange = e => {
   [...e.target.files].forEach(f => {
     const reader = new FileReader();
     reader.onload = ev => {
       const img = new Image();
-      img.onload = () => { 
-        S.celebs.push({ img, src: ev.target.result }); 
-        renderStrip(); 
-        // 버튼을 활성화하는 코드를 명시적으로 추가 (HTML에서 이미 disabled를 뺐다면 안전장치 역할)
-        document.getElementById('btn1').disabled = false; 
-      };
+      img.onload = () => { S.celebs.push({ img, src: ev.target.result }); renderStrip(); };
       img.src = ev.target.result;
     };
     reader.readAsDataURL(f);
   });
 };
-function renderStrip() { document.getElementById('celeb-strip').innerHTML = S.celebs.map(c => `<img src="${c.src}" style="height:40px; border:1px solid #333; margin-right:5px;">`).join(''); }
+function renderStrip() { 
+  document.getElementById('celeb-strip').innerHTML = S.celebs.map(c => 
+    `<img src="${c.src}" style="height:50px; border:1px solid #eee; background:white; padding:2px; margin-right:8px; box-shadow:2px 2px 5px rgba(0,0,0,0.05);">`
+  ).join(''); 
+}
 
-/* 2. Arrange & Zoom Logic */
 function openSlotModal(idx) { S.modalSlot = idx; renderModalCanvas(); renderModalPicker(); document.getElementById('slot-modal').classList.add('open'); }
-function renderModalPicker() { document.getElementById('modal-picker').innerHTML = S.celebs.map((c, i) => `<img src="${c.src}" onclick="addToSlot(${i})" style="height:40px; margin:5px; border:1px solid #444;">`).join(''); }
+function renderModalPicker() { 
+  document.getElementById('modal-picker').innerHTML = S.celebs.map((c, i) => 
+    `<img src="${c.src}" onclick="addToSlot(${i})" style="height:50px; padding:5px; background:white; border:1px solid #eee; margin-right:8px;">`
+  ).join(''); 
+}
 function addToSlot(ci) { S.slots[S.modalSlot].push({ ci, x: 25, y: 25, w: 50 }); renderModalCanvas(); }
 
 function renderModalCanvas() {
@@ -279,11 +343,9 @@ function renderModalCanvas() {
     const handleMove = (e) => {
       e.preventDefault(); const rect = container.getBoundingClientRect(); const ts = e.touches;
       if (ts && ts.length === 2) {
-        // Pinch Zoom
         const d = Math.hypot(ts[0].clientX-ts[1].clientX, ts[0].clientY-ts[1].clientY);
         item.w = Math.max(5, Math.min(300, startW * (d / startDist))); el.style.width = item.w + '%';
       } else {
-        // Drag
         const t = ts ? ts[0] : e;
         item.x = ((t.clientX - rect.left) / rect.width * 100) - (item.w / 2);
         const hP = (item.w * (img.naturalHeight / img.naturalWidth)) / S.camRatio;
@@ -291,19 +353,14 @@ function renderModalCanvas() {
         el.style.left = item.x + '%'; el.style.top = item.y + '%';
       }
     };
-
     el.onmousedown = el.ontouchstart = (e) => {
       if (e.touches && e.touches.length === 2) { startDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); startW = item.w; }
       document.onmousemove = document.ontouchmove = handleMove;
       document.onmouseup = document.ontouchend = () => { document.onmousemove = null; document.ontouchmove = null; };
     };
-
-    // Wheel Zoom for PC
     el.onwheel = (e) => {
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? -3 : 3;
-      item.w = Math.max(5, Math.min(300, item.w + delta));
-      el.style.width = item.w + '%';
+      e.preventDefault(); const delta = e.deltaY > 0 ? -3 : 3;
+      item.w = Math.max(5, Math.min(300, item.w + delta)); el.style.width = item.w + '%';
     };
   });
 }
@@ -319,61 +376,58 @@ function renderMiniSlot(idx) {
   });
 }
 
-/* 3. Archive Preview & Logic */
 function saveFrameToAlbum() {
-  if (S.frameAlbum.length >= 10) return alert("Full!");
+  if (S.frameAlbum.length >= 10) return alert("보관함이 가득 찼어요!");
   S.frameAlbum.push({ mode: S.mode, ratio: S.camRatio, celebsSrc: S.celebs.map(c => c.src), slots: JSON.parse(JSON.stringify(S.slots)) });
-  localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum)); alert("Saved!");
+  localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum)); alert("보관함에 저장되었습니다!");
 }
-/* 4. Archive Preview & Logic - 4개 슬롯이 모두 보이도록 수정된 버전 */
+
 function renderFrameAlbum() {
   const grid = document.getElementById('album-grid'); grid.innerHTML = '';
-  document.getElementById('archive-lbl').textContent = `ARCHIVE (${S.frameAlbum.length}/10)`;
+  document.getElementById('archive-lbl').textContent = `나의 다이어리 보관함 (${S.frameAlbum.length}/10)`;
   
   S.frameAlbum.forEach((f, idx) => {
-    const item = document.createElement('div'); item.className = 'card'; item.style.padding = '12px';
+    const wrapper = document.createElement('div');
+    wrapper.className = 'archive-item';
+    // 다이어리에 붙인 듯 약간의 랜덤 회전
+    const randomRot = (Math.random() * 4 - 2).toFixed(1);
+    wrapper.style.setProperty('--r', randomRot + 'deg');
+
+    // 마스킹 테이프 장식
+    const tape = document.createElement('div');
+    tape.className = 'tape';
+    wrapper.appendChild(tape);
     
-    // 외곽 프레임 (필름 느낌)
     const preview = document.createElement('div'); 
     preview.className = 'archive-preview'; 
     preview.style.cssText = `
-      aspect-ratio: ${f.ratio}; 
-      background: #111; 
-      padding: 10px; 
-      border-radius: 4px; 
-      display: grid; 
-      gap: 4px;
+      aspect-ratio: ${f.ratio}; background: #222; padding: 6px; display: grid; gap: 3px;
       grid-template-columns: ${f.mode === 'v' ? '1fr' : '1fr 1fr'};
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
     `;
     
-    // 각 슬롯 그리기
     f.slots.forEach((slotItems) => {
       const miniSlot = document.createElement('div');
-      miniSlot.style.cssText = `position:relative; background:#000; aspect-ratio:${f.ratio}; overflow:hidden; border-radius:2px;`;
-      
+      miniSlot.style.cssText = `position:relative; background:#111; aspect-ratio:${f.ratio}; overflow:hidden;`;
       slotItems.forEach(s => {
-        const img = document.createElement('img'); 
-        img.src = f.celebsSrc[s.ci];
+        const img = document.createElement('img'); img.src = f.celebsSrc[s.ci];
         img.style.cssText = `position:absolute; left:${s.x}%; top:${s.y}%; width:${s.w}%; opacity:0.9;`;
         miniSlot.appendChild(img);
       });
       preview.appendChild(miniSlot);
     });
 
-    item.appendChild(preview);
-    const info = document.createElement('div');
-    info.style.cssText = 'font-size:0.6rem; color:var(--accent); font-weight:800; margin:10px 0; font-family:Orbitron;';
-    info.textContent = `${f.mode.toUpperCase()} FRAME ${idx+1}`;
-    item.appendChild(info);
-    
-    const row = document.createElement('div'); row.className = 'row';
-    row.innerHTML = `<button class="btn btn-p" style="flex:1; padding:8px; font-size:0.7rem;" onclick="loadFrame(${idx})">LOAD</button>
-                     <button class="btn btn-g" style="flex:1; padding:8px; font-size:0.7rem;" onclick="deleteFrame(${idx})">DEL</button>`;
-    item.appendChild(row);
-    grid.appendChild(item);
+    wrapper.appendChild(preview);
+
+    const row = document.createElement('div'); 
+    row.className = 'row mt';
+    row.style.gap = '5px';
+    row.innerHTML = `<button class="btn btn-p" style="flex:1; padding:5px; font-size:0.8rem;" onclick="loadFrame(${idx})">불러오기</button>
+                     <button class="btn btn-g" style="flex:1; padding:5px; font-size:0.8rem;" onclick="deleteFrame(${idx})">삭제</button>`;
+    wrapper.appendChild(row);
+    grid.appendChild(wrapper);
   });
 }
+
 async function loadFrame(idx) {
   const f = S.frameAlbum[idx]; S.mode = f.mode; S.camRatio = f.ratio; S.celebs = [];
   for(let src of f.celebsSrc) { const i = new Image(); await new Promise(r=>{i.onload=r; i.src=src;}); S.celebs.push({img:i, src}); }
@@ -382,7 +436,6 @@ async function loadFrame(idx) {
 }
 function deleteFrame(idx) { S.frameAlbum.splice(idx,1); localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum)); renderFrameAlbum(); }
 
-/* 4. Shoot & Build Result */
 function startOverlay() {
   const oc = document.getElementById('cam-cv'), ctx = oc.getContext('2d'), v = document.getElementById('video');
   const step = () => { if(v.videoWidth) { 
@@ -394,6 +447,8 @@ function startOverlay() {
   } S.raf = requestAnimationFrame(step); }; step();
 }
 function stopOverlay() { cancelAnimationFrame(S.raf); }
+
+document.getElementById('btn-shoot').onclick = shoot;
 async function shoot() {
   if (S.cur >= 4) return;
   const cd = document.getElementById('cam-cd'); cd.textContent = '3'; cd.style.opacity = 1;
@@ -407,16 +462,11 @@ async function shoot() {
   S.cur++; document.getElementById('shot-lbl').textContent = `${S.cur} / 4 SHOTS`;
   if(S.cur === 4) setTimeout(() => goTo(4), 500);
 }
-function reshot() { 
-  S.cur = 0; 
-  S.shots = [null,null,null,null]; 
-  document.getElementById('shot-lbl').textContent = `0 / 4 SHOTS`; // 카운트 즉시 초기화
-  goTo(3); 
-}
+function reshot() { S.cur = 0; S.shots = [null,null,null,null]; document.getElementById('shot-lbl').textContent = `0 / 4 SHOTS`; goTo(3); }
 
 async function buildResult() {
   const wrap = document.getElementById('result-wrap'); wrap.innerHTML = '';
-  const themes = [{bg:'#111', text:'#eee'}, {bg:'#fff', text:'#111'}];
+  const themes = [{bg:'#1a1a1a', text:'#eee', name:'Black'}, {bg:'#f8f8f8', text:'#333', name:'White'}, {bg:'#ffb5a7', text:'#fff', name:'Pink'}];
   for(let t of themes) {
     const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
     const FW = 400, PAD = 25, GAP = 15;
@@ -431,7 +481,7 @@ async function buildResult() {
       ctx.fillStyle = t.bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
       for(let i=0; i<4; i++) { const img = await loadImg(S.shots[i]); const dx = PAD + (i % 2) * (SW + GAP), dy = PAD + Math.floor(i / 2) * (SH + GAP); ctx.drawImage(img, dx, dy, SW, SH); }
     }
-    ctx.fillStyle = t.text; ctx.font = 'bold 20px Orbitron'; ctx.textAlign = 'center'; ctx.fillText('STUDIO BOOTH 4', FW/2, canvas.height - 40);
+    ctx.fillStyle = t.text; ctx.font = 'bold 20px Gaegu'; ctx.textAlign = 'center'; ctx.fillText('MY DIARY CUTS', FW/2, canvas.height - 40);
     
     const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
     const div = document.createElement('div'); div.className = 'film-card';
@@ -439,15 +489,13 @@ async function buildResult() {
     div.appendChild(preview);
     div.onclick = () => { 
       document.querySelectorAll('.film-card').forEach(c => c.classList.remove('picked')); 
-      div.classList.add('picked'); 
-      S.picked_data = dataUrl; 
-      document.getElementById('btn-dl').disabled = false; 
+      div.classList.add('picked'); S.picked_data = dataUrl; document.getElementById('btn-dl').disabled = false; 
     };
     wrap.appendChild(div);
   }
 }
 function loadImg(src) { return new Promise(res => { const i = new Image(); i.onload = () => res(i); i.src = src; }); }
-function dlPicked() { const a = document.createElement('a'); a.download = 'booth4.jpg'; a.href = S.picked_data; a.click(); }
+function dlPicked() { const a = document.createElement('a'); a.download = 'diary_booth.jpg'; a.href = S.picked_data; a.click(); }
 </script>
 </body>
 </html>
