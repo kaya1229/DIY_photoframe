@@ -14,7 +14,7 @@
 body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 .app { position:relative; max-width:500px; margin:0 auto; padding: 20px 16px 100px; }
 
-/* UI Headers & Steps */
+/* UI Headers */
 .hd { display:none; justify-content:space-between; align-items:center; padding:10px 0 30px; }
 .logo { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; letter-spacing: 2px; color: var(--accent); text-shadow: var(--sh); cursor:pointer; }
 .steps { display:none; gap:8px; margin-bottom:24px; }
@@ -22,7 +22,7 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 .si.on { background: var(--accent); box-shadow: var(--sh); }
 .si.dn { background: #444; }
 
-/* Global Cards & Buttons */
+/* Cards & Buttons */
 .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
 .card-lbl { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); margin-bottom: 16px; letter-spacing: 1px; text-transform: uppercase; }
 .btn { display: inline-flex; align-items: center; justify-content: center; padding: 14px 24px; border-radius: 4px; font-weight: 800; font-size: 0.9rem; border: none; cursor: pointer; transition: 0.2s; }
@@ -31,23 +31,23 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 .btn-p:disabled { background: #444; box-shadow: none; opacity: 0.5; }
 .btn-g { background: #222; color: #fff; border: 1px solid #333; }
 
-/* Film Cards (Selection Visual) */
+/* Film Selection Styles */
 .film-card { flex-shrink: 0; border: 3px solid transparent; cursor: pointer; transition: 0.3s; padding: 4px; border-radius: 6px; }
 .film-card.picked { border-color: var(--accent); background: rgba(255, 0, 122, 0.1); box-shadow: var(--sh); transform: scale(1.02); }
 
-/* Camera & Grid */
+/* Camera & Slot Grid */
 #cam-wrap { position:relative; background:#000; border: 4px solid #222; border-radius: 4px; overflow: hidden; width: 100%; }
 #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 #cam-cv { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 #cam-cd { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:6rem; font-family:'Orbitron'; color:var(--accent); opacity:0; pointer-events:none; z-index:10; }
 
-.fslot { border:1px solid #333; background:#000; position:relative; overflow:hidden; width:100%; cursor: pointer; }
 .slot-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fslot { border:1px solid #333; background:#000; position:relative; overflow:hidden; width:100%; cursor: pointer; }
 
-/* Archive Preview */
-.archive-preview { background:#000; border:1px solid #333; width:100%; position:relative; overflow:hidden; border-radius:4px; margin-bottom:8px; }
+/* Archive Styles */
+.archive-preview { background:#000; border:1px solid #333; width:100%; position:relative; overflow:hidden; border-radius:4px; margin-bottom:8px; display: block; }
 
-/* Modal */
+/* Modal & Interaction */
 .slot-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:500; align-items:center; justify-content:center; padding:20px; }
 .slot-modal-bg.open { display:flex; }
 .slot-modal { background:var(--card); border:1px solid var(--border); border-radius:8px; width:100%; max-width:400px; padding:20px; }
@@ -153,7 +153,7 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 
 <div class="slot-modal-bg" id="slot-modal">
   <div class="slot-modal">
-    <div class="card-lbl">Drag: Move / Pinch: Zoom</div>
+    <div class="card-lbl">Move: Drag / Zoom: Pinch or Scroll</div>
     <div class="slot-modal-canvas" id="slot-modal-canvas"></div>
     <div id="modal-picker" class="row" style="overflow-x:auto; padding-bottom:5px;"></div>
     <div class="row btw mt">
@@ -214,7 +214,7 @@ function applyRatioToUI() {
   });
 }
 
-/* Upload & Strip */
+/* 1. Upload */
 document.getElementById('celebInput').onchange = e => {
   [...e.target.files].forEach(f => {
     const reader = new FileReader();
@@ -228,7 +228,7 @@ document.getElementById('celebInput').onchange = e => {
 };
 function renderStrip() { document.getElementById('celeb-strip').innerHTML = S.celebs.map(c => `<img src="${c.src}" style="height:40px; border:1px solid #333; margin-right:5px;">`).join(''); }
 
-/* Modal & Arrange */
+/* 2. Arrange & Zoom Logic */
 function openSlotModal(idx) { S.modalSlot = idx; renderModalCanvas(); renderModalPicker(); document.getElementById('slot-modal').classList.add('open'); }
 function renderModalPicker() { document.getElementById('modal-picker').innerHTML = S.celebs.map((c, i) => `<img src="${c.src}" onclick="addToSlot(${i})" style="height:40px; margin:5px; border:1px solid #444;">`).join(''); }
 function addToSlot(ci) { S.slots[S.modalSlot].push({ ci, x: 25, y: 25, w: 50 }); renderModalCanvas(); }
@@ -246,9 +246,11 @@ function renderModalCanvas() {
     const handleMove = (e) => {
       e.preventDefault(); const rect = container.getBoundingClientRect(); const ts = e.touches;
       if (ts && ts.length === 2) {
+        // Pinch Zoom
         const d = Math.hypot(ts[0].clientX-ts[1].clientX, ts[0].clientY-ts[1].clientY);
         item.w = Math.max(5, Math.min(300, startW * (d / startDist))); el.style.width = item.w + '%';
       } else {
+        // Drag
         const t = ts ? ts[0] : e;
         item.x = ((t.clientX - rect.left) / rect.width * 100) - (item.w / 2);
         const hP = (item.w * (img.naturalHeight / img.naturalWidth)) / S.camRatio;
@@ -256,13 +258,23 @@ function renderModalCanvas() {
         el.style.left = item.x + '%'; el.style.top = item.y + '%';
       }
     };
+
     el.onmousedown = el.ontouchstart = (e) => {
       if (e.touches && e.touches.length === 2) { startDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); startW = item.w; }
       document.onmousemove = document.ontouchmove = handleMove;
       document.onmouseup = document.ontouchend = () => { document.onmousemove = null; document.ontouchmove = null; };
     };
+
+    // Wheel Zoom for PC
+    el.onwheel = (e) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -3 : 3;
+      item.w = Math.max(5, Math.min(300, item.w + delta));
+      el.style.width = item.w + '%';
+    };
   });
 }
+
 function closeSlotModal() { renderMiniSlot(S.modalSlot); document.getElementById('slot-modal').classList.remove('open'); }
 function clearModalSlot() { S.slots[S.modalSlot] = []; renderModalCanvas(); }
 function renderMiniSlot(idx) {
@@ -274,7 +286,7 @@ function renderMiniSlot(idx) {
   });
 }
 
-/* Archive */
+/* 3. Archive Preview & Logic */
 function saveFrameToAlbum() {
   if (S.frameAlbum.length >= 10) return alert("Full!");
   S.frameAlbum.push({ mode: S.mode, ratio: S.camRatio, celebsSrc: S.celebs.map(c => c.src), slots: JSON.parse(JSON.stringify(S.slots)) });
@@ -285,17 +297,29 @@ function renderFrameAlbum() {
   document.getElementById('archive-lbl').textContent = `ARCHIVE (${S.frameAlbum.length}/10)`;
   S.frameAlbum.forEach((f, idx) => {
     const item = document.createElement('div'); item.className = 'card'; item.style.padding = '10px';
-    const preview = document.createElement('div'); preview.className = 'archive-preview'; preview.style.aspectRatio = f.ratio;
-    // Simple slot preview
+    
+    // Create Preview Element
+    const preview = document.createElement('div'); 
+    preview.className = 'archive-preview'; 
+    preview.style.aspectRatio = f.ratio;
+    
+    // Draw small icons for each slot
     f.slots[0].forEach(s => {
       const img = document.createElement('img'); img.src = f.celebsSrc[s.ci];
-      img.style.cssText = `position:absolute; left:${s.x}%; top:${s.y}%; width:${s.w}%; opacity:0.6;`;
+      img.style.cssText = `position:absolute; left:${s.x}%; top:${s.y}%; width:${s.w}%; opacity:0.8;`;
       preview.appendChild(img);
     });
-    item.innerHTML = ``; item.appendChild(preview);
-    item.innerHTML += `<div style="font-size:0.6rem; color:#888; margin-bottom:8px;">${f.mode.toUpperCase()} FRAME ${idx+1}</div>
-      <button class="btn btn-p" style="width:100%; padding:8px; font-size:0.7rem; margin-bottom:5px;" onclick="loadFrame(${idx})">LOAD</button>
-      <button class="btn btn-g" style="width:100%; padding:8px; font-size:0.7rem;" onclick="deleteFrame(${idx})">DEL</button>`;
+
+    item.appendChild(preview);
+    const info = document.createElement('div');
+    info.style.cssText = 'font-size:0.6rem; color:#888; margin-bottom:8px;';
+    info.textContent = `${f.mode.toUpperCase()} FRAME ${idx+1}`;
+    item.appendChild(info);
+    
+    const row = document.createElement('div'); row.className = 'row';
+    row.innerHTML = `<button class="btn btn-p" style="flex:1; padding:8px; font-size:0.7rem;" onclick="loadFrame(${idx})">LOAD</button>
+                     <button class="btn btn-g" style="flex:1; padding:8px; font-size:0.7rem;" onclick="deleteFrame(${idx})">DEL</button>`;
+    item.appendChild(row);
     grid.appendChild(item);
   });
 }
@@ -307,7 +331,7 @@ async function loadFrame(idx) {
 }
 function deleteFrame(idx) { S.frameAlbum.splice(idx,1); localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum)); renderFrameAlbum(); }
 
-/* Shoot & Results */
+/* 4. Shoot & Build Result */
 function startOverlay() {
   const oc = document.getElementById('cam-cv'), ctx = oc.getContext('2d'), v = document.getElementById('video');
   const step = () => { if(v.videoWidth) { 
