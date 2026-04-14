@@ -83,15 +83,27 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
   </div>
 
   <div class="screen" id="sc0">
-    <div class="card">
-      <div class="card-lbl">0. SELECT FILM LAYOUT</div>
-      <div class="row">
-        <div class="mode-card on" id="m-v" onclick="setMode('v')" style="border:2px solid #222; padding:20px; text-align:center; border-radius:8px; cursor:pointer; flex:1;">1 x 4</div>
-        <div class="mode-card" id="m-q" onclick="setMode('q')" style="border:2px solid #222; padding:20px; text-align:center; border-radius:8px; cursor:pointer; flex:1;">2 x 2</div>
+  <div class="card">
+    <div class="card-lbl">0. SELECT FILM LAYOUT</div>
+    <div class="row" style="gap:15px;">
+      <div class="mode-card on" id="m-v" onclick="setMode('v')" style="border:2px solid var(--accent); padding:15px; text-align:center; border-radius:8px; cursor:pointer; flex:1; background:rgba(255,0,122,0.05);">
+        <div style="width:30px; height:50px; border:2px solid #555; margin:0 auto 10px; display:flex; flex-direction:column; gap:2px; padding:3px;">
+          <div style="flex:1; background:#333;"></div><div style="flex:1; background:#333;"></div>
+          <div style="flex:1; background:#333;"></div><div style="flex:1; background:#333;"></div>
+        </div>
+        <div style="font-weight:800; font-size:0.8rem;">1 x 4</div>
       </div>
-      <button class="btn btn-p mt" style="width:100%" onclick="goTo(1)">NEXT →</button>
+      <div class="mode-card" id="m-q" onclick="setMode('q')" style="border:2px solid #222; padding:15px; text-align:center; border-radius:8px; cursor:pointer; flex:1;">
+        <div style="width:40px; height:40px; border:2px solid #555; margin:0 auto 10px; display:grid; grid-template-columns:1fr 1fr; gap:2px; padding:3px;">
+          <div style="background:#333;"></div><div style="background:#333;"></div>
+          <div style="background:#333;"></div><div style="background:#333;"></div>
+        </div>
+        <div style="font-weight:800; font-size:0.8rem;">2 x 2</div>
+      </div>
     </div>
+    <button class="btn btn-p mt" style="width:100%" onclick="goTo(1)">NEXT →</button>
   </div>
+</div>
 
   <div class="screen" id="sc1">
     <div class="card">
@@ -315,62 +327,50 @@ function saveFrameToAlbum() {
 }
 /* 4. Archive Preview & Logic - 4개 슬롯이 모두 보이도록 수정된 버전 */
 function renderFrameAlbum() {
-  const grid = document.getElementById('album-grid'); 
-  grid.innerHTML = '';
+  const grid = document.getElementById('album-grid'); grid.innerHTML = '';
   document.getElementById('archive-lbl').textContent = `ARCHIVE (${S.frameAlbum.length}/10)`;
   
   S.frameAlbum.forEach((f, idx) => {
-    const item = document.createElement('div'); 
-    item.className = 'card'; 
-    item.style.padding = '10px';
+    const item = document.createElement('div'); item.className = 'card'; item.style.padding = '12px';
     
-    // 프레임 전체를 감싸는 프리뷰 컨테이너
+    // 외곽 프레임 (필름 느낌)
     const preview = document.createElement('div'); 
     preview.className = 'archive-preview'; 
-    preview.style.aspectRatio = f.ratio;
+    preview.style.cssText = `
+      aspect-ratio: ${f.ratio}; 
+      background: #111; 
+      padding: 10px; 
+      border-radius: 4px; 
+      display: grid; 
+      gap: 4px;
+      grid-template-columns: ${f.mode === 'v' ? '1fr' : '1fr 1fr'};
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    `;
     
-    // 모드(1x4 또는 2x2)에 맞춰 그리드 레이아웃 설정
-    preview.style.display = 'grid';
-    if(f.mode === 'v') {
-      preview.style.gridTemplateColumns = '1fr'; // 세로 한 줄 (1x4)
-    } else {
-      preview.style.gridTemplateColumns = '1fr 1fr'; // 가로 두 줄 (2x2)
-    }
-    preview.style.gap = '2px';
-    preview.style.background = '#222'; // 슬롯 사이의 간격 색상
-
-    // 저장된 모든 슬롯(4개)을 순회하며 작게 그림
+    // 각 슬롯 그리기
     f.slots.forEach((slotItems) => {
       const miniSlot = document.createElement('div');
-      miniSlot.style.cssText = `position:relative; background:#000; aspect-ratio:${f.ratio}; overflow:hidden; border:0.5px solid #333;`;
+      miniSlot.style.cssText = `position:relative; background:#000; aspect-ratio:${f.ratio}; overflow:hidden; border-radius:2px;`;
       
-      // 각 슬롯 안에 배치된 요소(스티커/이미지)들을 그림
       slotItems.forEach(s => {
         const img = document.createElement('img'); 
         img.src = f.celebsSrc[s.ci];
-        img.style.cssText = `position:absolute; left:${s.x}%; top:${s.y}%; width:${s.w}%; opacity:0.8;`;
+        img.style.cssText = `position:absolute; left:${s.x}%; top:${s.y}%; width:${s.w}%; opacity:0.9;`;
         miniSlot.appendChild(img);
       });
       preview.appendChild(miniSlot);
     });
 
     item.appendChild(preview);
-
-    // 하단 정보 텍스트
     const info = document.createElement('div');
-    info.style.cssText = 'font-size:0.6rem; color:#888; margin-bottom:8px; margin-top:8px;';
+    info.style.cssText = 'font-size:0.6rem; color:var(--accent); font-weight:800; margin:10px 0; font-family:Orbitron;';
     info.textContent = `${f.mode.toUpperCase()} FRAME ${idx+1}`;
     item.appendChild(info);
     
-    // 버튼 그룹 (LOAD, DEL)
-    const row = document.createElement('div'); 
-    row.className = 'row';
-    row.innerHTML = `
-      <button class="btn btn-p" style="flex:1; padding:8px; font-size:0.7rem;" onclick="loadFrame(${idx})">LOAD</button>
-      <button class="btn btn-g" style="flex:1; padding:8px; font-size:0.7rem;" onclick="deleteFrame(${idx})">DEL</button>
-    `;
+    const row = document.createElement('div'); row.className = 'row';
+    row.innerHTML = `<button class="btn btn-p" style="flex:1; padding:8px; font-size:0.7rem;" onclick="loadFrame(${idx})">LOAD</button>
+                     <button class="btn btn-g" style="flex:1; padding:8px; font-size:0.7rem;" onclick="deleteFrame(${idx})">DEL</button>`;
     item.appendChild(row);
-    
     grid.appendChild(item);
   });
 }
@@ -407,7 +407,12 @@ async function shoot() {
   S.cur++; document.getElementById('shot-lbl').textContent = `${S.cur} / 4 SHOTS`;
   if(S.cur === 4) setTimeout(() => goTo(4), 500);
 }
-function reshot() { S.cur = 0; S.shots = [null,null,null,null]; goTo(3); }
+function reshot() { 
+  S.cur = 0; 
+  S.shots = [null,null,null,null]; 
+  document.getElementById('shot-lbl').textContent = `0 / 4 SHOTS`; // 카운트 즉시 초기화
+  goTo(3); 
+}
 
 async function buildResult() {
   const wrap = document.getElementById('result-wrap'); wrap.innerHTML = '';
