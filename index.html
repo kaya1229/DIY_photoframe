@@ -11,7 +11,7 @@
   --text-dim: #888888; --border: #222222; --sh: 0 0 20px rgba(255, 0, 122, 0.2);
 }
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 .app { position:relative; max-width:500px; margin:0 auto; padding: 20px 16px 100px; }
 
 /* UI */
@@ -29,50 +29,45 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 .btn-p:disabled { background: #444; box-shadow: none; opacity: 0.5; }
 .btn-g { background: #222; color: #fff; border: 1px solid #333; }
 
-/* Camera Area */
+/* Layout Mode Styles */
+.mode-card { border: 2px solid #222; padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; transition: 0.2s; flex: 1; }
+.mode-card.on { border-color: var(--accent); background: #200a14; }
+
+/* Camera & Grid */
 #cam-wrap { position:relative; background:#000; border: 4px solid #222; border-radius: 4px; overflow: hidden; width: 100%; }
 #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 #cam-cv { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
 #cam-cd { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:6rem; font-family:'Orbitron'; color:var(--accent); opacity:0; pointer-events:none; z-index:10; }
-.th-row { display: grid; gap: 5px; margin-top: 15px; }
-.th-row.v-mode { grid-template-columns: repeat(4, 1fr); }
-.th-row.q-mode { grid-template-columns: repeat(2, 1fr); }
-.th-box { aspect-ratio: 4/3; background:#222; border-radius:2px; overflow:hidden; border:1px solid #333; }
-.th-box img { width:100%; height:100%; object-fit:cover; }
 
-/* Modal & Drag */
-.slot-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:500; align-items:center; justify-content:center; padding:20px; }
+.grid-2x2 { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid-1x4 { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; } /* Edit grid is same, but final is 1x4 */
+
+.fslot { border:1px solid #333; background:#000; position:relative; overflow:hidden; width:100%; cursor: pointer; transition: transform 0.2s; }
+.fslot:active { transform: scale(0.98); }
+
+/* Modal & Drag/Scale */
+.slot-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:500; align-items:center; justify-content:center; padding:20px; }
 .slot-modal-bg.open { display:flex; }
 .slot-modal { background:var(--card); border:1px solid var(--border); border-radius:8px; width:100%; max-width:400px; padding:20px; }
 .slot-modal-canvas { width:100%; background:#000; position:relative; overflow:hidden; margin-bottom:15px; border: 1px solid #333; touch-action: none; }
-.cdrag { position:absolute; user-select:none; will-change: transform, width; }
+.cdrag { position:absolute; user-select:none; will-change: transform, width, top, left; }
 .cdrag img { width:100%; display:block; pointer-events:none; }
 
 .screen { display:none; }
 .screen.active { display:block; }
 .row { display:flex; gap:10px; align-items:center; }
 .btw { justify-content: space-between; }
-.center { justify-content: center; }
 .mt { margin-top: 15px; }
 
 #home-screen { text-align: center; padding-top: 80px; }
 #home-screen h1 { font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 40px; color: var(--accent); text-shadow: var(--sh); }
-
-.mode-card { border: 2px solid #222; padding: 20px; text-align: center; border-radius: 8px; cursor: pointer; transition: 0.2s; flex: 1; }
-.mode-card.on { border-color: var(--accent); background: #200a14; }
-
-#result-wrap { display: flex; gap: 20px; overflow-x: auto; padding: 20px 0; justify-content: center; }
-.film-card { flex-shrink: 0; border: 3px solid transparent; cursor: pointer; transition: 0.2s; padding: 5px; }
-.film-card.picked { border-color: var(--accent); box-shadow: var(--sh); }
-
-.fslot { border:1px solid #333; background:#000; position:relative; overflow:hidden; width:100%; cursor: pointer; }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="hd" id="global-header">
     <div class="logo" onclick="location.reload()">BOOTH 4</div>
-    <button class="btn btn-g" style="padding:5px 10px; font-size:0.7rem;" onclick="location.reload()">NEW</button>
+    <button class="btn btn-g" style="padding:5px 10px; font-size:0.7rem;" onclick="goTo('home')">HOME</button>
   </div>
 
   <div class="steps" id="step-bar">
@@ -81,25 +76,16 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 
   <div class="screen active" id="home-screen">
     <h1>STUDIO<br>BOOTH 4</h1>
-    <button class="btn btn-p" style="width:100%; padding:25px; font-size:1.1rem;" onclick="goTo(0)">START SHOOTING</button>
+    <button class="btn btn-p" style="width:100%; padding:25px; font-size:1.1rem; margin-bottom:12px;" onclick="goTo(0)">START SHOOTING</button>
+    <button class="btn btn-g" style="width:100%; padding:20px;" onclick="goTo(5)">FRAME ARCHIVE</button>
   </div>
 
   <div class="screen" id="sc0">
     <div class="card">
       <div class="card-lbl">0. SELECT FILM LAYOUT</div>
       <div class="row">
-        <div class="mode-card on" id="m-v" onclick="setMode('v')">
-          <div style="width:30px; height:60px; border:2px solid currentColor; margin:0 auto 10px; display:flex; flex-direction:column; gap:2px; padding:2px;">
-            <div style="flex:1; background:currentColor; opacity:0.3"></div><div style="flex:1; background:currentColor; opacity:0.3"></div><div style="flex:1; background:currentColor; opacity:0.3"></div><div style="flex:1; background:currentColor; opacity:0.3"></div>
-          </div>
-          1 x 4
-        </div>
-        <div class="mode-card" id="m-q" onclick="setMode('q')">
-          <div style="width:50px; height:50px; border:2px solid currentColor; margin:0 auto 10px; display:grid; grid-template-columns:1fr 1fr; gap:2px; padding:2px;">
-            <div style="background:currentColor; opacity:0.3"></div><div style="background:currentColor; opacity:0.3"></div><div style="background:currentColor; opacity:0.3"></div><div style="background:currentColor; opacity:0.3"></div>
-          </div>
-          2 x 2
-        </div>
+        <div class="mode-card on" id="m-v" onclick="setMode('v')">1 x 4 (Vertical)</div>
+        <div class="mode-card" id="m-q" onclick="setMode('q')">2 x 2 (Square)</div>
       </div>
       <button class="btn btn-p mt" style="width:100%" onclick="goTo(1)">NEXT →</button>
     </div>
@@ -110,35 +96,35 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
       <div class="card-lbl">1. UPLOAD ELEMENTS</div>
       <label for="celebInput">
         <div style="border: 2px dashed #333; padding: 40px 20px; text-align: center; border-radius: 8px; cursor: pointer;">
-          <p style="font-weight:600;">클릭하여 PNG/GIF 업로드</p>
+          <p>PNG/GIF 업로드</p>
         </div>
       </label>
       <input type="file" id="celebInput" accept="image/*" multiple style="display:none">
-      <div id="celeb-strip" class="row mt" style="overflow-x:auto; padding-bottom:10px;"></div>
+      <div id="celeb-strip" class="row mt" style="overflow-x:auto; padding-bottom:5px;"></div>
       <button class="btn btn-p mt" id="btn1" style="width:100%" disabled onclick="goTo(2)">ARRANGE →</button>
     </div>
   </div>
 
   <div class="screen" id="sc2">
     <div class="card">
-      <div class="card-lbl">2. ARRANGE SLOTS</div>
-      <div id="slot-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="card-lbl">2. ARRANGE SLOTS (Tap to Edit)</div>
+      <div id="slot-grid" class="grid-2x2">
         <div class="fslot" id="fs0" onclick="openSlotModal(0)"></div>
         <div class="fslot" id="fs1" onclick="openSlotModal(1)"></div>
         <div class="fslot" id="fs2" onclick="openSlotModal(2)"></div>
         <div class="fslot" id="fs3" onclick="openSlotModal(3)"></div>
       </div>
-      <button class="btn btn-p mt" style="width:100%" onclick="goTo(3)">SHOOT →</button>
+      <div class="row mt">
+        <button class="btn btn-g" style="flex:1" onclick="saveFrameToAlbum()">SAVE</button>
+        <button class="btn btn-p" style="flex:2" onclick="goTo(3)">SHOOT →</button>
+      </div>
     </div>
   </div>
 
   <div class="screen" id="sc3">
     <div class="card">
-      <div class="btw row" style="margin-bottom:15px;"><div class="card-lbl" id="shot-lbl" style="margin:0">0 / 4 SHOTS</div></div>
+      <div class="card-lbl" id="shot-lbl">0 / 4 SHOTS</div>
       <div id="cam-wrap"><video id="video" autoplay playsinline muted></video><canvas id="cam-cv"></canvas><div id="cam-cd"></div></div>
-      <div class="th-row" id="cam-th-row">
-        <div class="th-box"></div><div class="th-box"></div><div class="th-box"></div><div class="th-box"></div>
-      </div>
       <button class="btn btn-p mt" id="btn-shoot" style="width:100%" onclick="shoot()">📸 SHOOT</button>
     </div>
   </div>
@@ -146,18 +132,26 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
   <div class="screen" id="sc4">
     <div class="card">
       <div class="card-lbl">CHOOSE YOUR FILM</div>
-      <div id="result-wrap"></div>
+      <div id="result-wrap" style="display:flex; gap:10px; overflow-x:auto;"></div>
       <div class="row btw mt">
         <button class="btn btn-g" onclick="reshot()">RE-SHOOT</button>
         <button class="btn btn-p" id="btn-dl" disabled onclick="dlPicked()">DOWNLOAD</button>
       </div>
     </div>
   </div>
+
+  <div class="screen" id="sc5">
+    <div class="card">
+      <div class="card-lbl" id="archive-lbl">ARCHIVE (0/10)</div>
+      <div id="album-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
+      <button class="btn btn-g mt" style="width:100%" onclick="goTo('home')">BACK</button>
+    </div>
+  </div>
 </div>
 
 <div class="slot-modal-bg" id="slot-modal">
   <div class="slot-modal">
-    <div class="card-lbl">MOVE & ZOOM</div>
+    <div class="card-lbl">Drag: Move / Pinch or Scroll: Zoom</div>
     <div class="slot-modal-canvas" id="slot-modal-canvas"></div>
     <div id="modal-picker" class="row" style="overflow-x:auto; padding-bottom:5px;"></div>
     <div class="row btw mt">
@@ -170,10 +164,9 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 
 <script>
 const S = {
-  mode: 'v', // 'v' for 1x4, 'q' for 2x2
-  celebs: [], slots: [[],[],[],[]], shots: [null,null,null,null], cur: 0,
-  modalSlot: null, stream: null, raf: null, picked_data: null,
-  camRatio: 4/3
+  mode: 'v', celebs: [], slots: [[],[],[],[]], shots: [null,null,null,null], cur: 0,
+  modalSlot: null, stream: null, raf: null, picked_data: null, camRatio: 4/3,
+  frameAlbum: JSON.parse(localStorage.getItem('booth_frame_album') || '[]')
 };
 
 function setMode(m) {
@@ -183,16 +176,20 @@ function setMode(m) {
 }
 
 function goTo(n) {
-  const screens = ['home-screen', 'sc0', 'sc1', 'sc2', 'sc3', 'sc4'];
+  const screens = ['home-screen', 'sc0', 'sc1', 'sc2', 'sc3', 'sc4', 'sc5'];
+  let idx = (n === 'home') ? 0 : (typeof n === 'number' ? n + 1 : 0);
+  if(n === 5) idx = 6;
+
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screens[n+1] || screens[0]).classList.add('active');
+  document.getElementById(screens[idx]).classList.add('active');
   
-  document.getElementById('global-header').style.display = n === 'home' ? 'none' : 'flex';
-  document.getElementById('step-bar').style.display = (typeof n === 'number' && n <= 4) ? 'flex' : 'none';
+  document.getElementById('global-header').style.display = (idx === 0) ? 'none' : 'flex';
+  document.getElementById('step-bar').style.display = (idx > 0 && idx < 6) ? 'flex' : 'none';
 
   if(n === 2) applyRatioToUI();
   if(n === 3) initCam(); else stopOverlay();
   if(n === 4) buildResult();
+  if(n === 5) renderFrameAlbum();
 
   if(typeof n === 'number' && n <= 4) {
     document.querySelectorAll('.si').forEach((s, i) => {
@@ -207,41 +204,32 @@ async function initCam() {
   if (!S.stream) {
     S.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
     v.srcObject = S.stream;
-    v.onloadedmetadata = () => {
-      S.camRatio = v.videoWidth / v.videoHeight;
-      applyRatioToUI();
-    };
+    v.onloadedmetadata = () => { S.camRatio = v.videoWidth / v.videoHeight; applyRatioToUI(); };
   }
   startOverlay();
 }
 
 function applyRatioToUI() {
-  const wrap = document.getElementById('cam-wrap');
-  if(wrap) wrap.style.aspectRatio = S.camRatio;
-  document.querySelectorAll('.fslot').forEach(s => s.style.aspectRatio = S.camRatio);
-  document.getElementById('slot-modal-canvas').style.aspectRatio = S.camRatio;
-  
-  const thRow = document.getElementById('cam-th-row');
-  thRow.className = `th-row ${S.mode === 'v' ? 'v-mode' : 'q-mode'}`;
+  document.querySelectorAll('.fslot, #slot-modal-canvas, #cam-wrap').forEach(el => { if(el) el.style.aspectRatio = S.camRatio; });
 }
 
 /* Upload */
-document.getElementById('celebInput').addEventListener('change', e => {
+document.getElementById('celebInput').onchange = e => {
   [...e.target.files].forEach(f => {
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = ev => {
       const img = new Image();
       img.onload = () => { S.celebs.push({ img, src: ev.target.result }); renderStrip(); document.getElementById('btn1').disabled = false; };
       img.src = ev.target.result;
     };
     reader.readAsDataURL(f);
   });
-});
-function renderStrip() { document.getElementById('celeb-strip').innerHTML = S.celebs.map(c => `<img src="${c.src}" style="height:50px; border:1px solid #333; border-radius:4px; margin-right:5px;">`).join(''); }
+};
+function renderStrip() { document.getElementById('celeb-strip').innerHTML = S.celebs.map(c => `<img src="${c.src}" style="height:40px; border:1px solid #333; margin-right:5px;">`).join(''); }
 
-/* Arrange Modal */
+/* Arrange & Zoom Logic */
 function openSlotModal(idx) { S.modalSlot = idx; renderModalCanvas(); renderModalPicker(); document.getElementById('slot-modal').classList.add('open'); }
-function renderModalPicker() { document.getElementById('modal-picker').innerHTML = S.celebs.map((c, i) => `<img src="${c.src}" onclick="addToSlot(${i})" style="height:45px; border:1px solid #444; margin:0 5px;">`).join(''); }
+function renderModalPicker() { document.getElementById('modal-picker').innerHTML = S.celebs.map((c, i) => `<img src="${c.src}" onclick="addToSlot(${i})" style="height:40px; margin:5px; border:1px solid #444;">`).join(''); }
 function addToSlot(ci) { S.slots[S.modalSlot].push({ ci, x: 25, y: 25, w: 50 }); renderModalCanvas(); }
 
 function renderModalCanvas() {
@@ -251,41 +239,92 @@ function renderModalCanvas() {
     const el = document.createElement('div');
     el.className = 'cdrag';
     el.style.cssText = `left:${item.x}%; top:${item.y}%; width:${item.w}%;`;
-    const img = document.createElement('img'); img.src = S.celebs[item.ci].src;
-    el.appendChild(img); container.appendChild(el);
+    const img = document.createElement('img');
+    img.src = S.celebs[item.ci].src;
+    el.appendChild(img);
+    container.appendChild(el);
 
-    let sDist = 0, sW = 0;
-    const move = (e) => {
+    // Zoom & Drag State
+    let startDist = 0, startW = 0;
+
+    const handleMove = (e) => {
       e.preventDefault();
       const rect = container.getBoundingClientRect();
-      const touch = e.touches ? e.touches[0] : e;
-      if (e.touches && e.touches.length === 2) {
-        const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-        item.w = Math.max(5, Math.min(200, sW * (d / sDist))); el.style.width = item.w + '%';
+      const touches = e.touches;
+
+      if (touches && touches.length === 2) {
+        // Pinch Zoom
+        const dist = Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+        item.w = Math.max(5, Math.min(300, startW * (dist / startDist)));
+        el.style.width = item.w + '%';
       } else {
+        // Drag
+        const touch = touches ? touches[0] : e;
         item.x = ((touch.clientX - rect.left) / rect.width * 100) - (item.w / 2);
-        const hPercent = (item.w * (img.naturalHeight / img.naturalWidth)) / S.camRatio;
-        item.y = ((touch.clientY - rect.top) / rect.height * 100) - (hPercent / 2);
-        el.style.left = item.x + '%'; el.style.top = item.y + '%';
+        const hP = (item.w * (img.naturalHeight / img.naturalWidth)) / S.camRatio;
+        item.y = ((touch.clientY - rect.top) / rect.height * 100) - (hP / 2);
+        el.style.left = item.x + '%';
+        el.style.top = item.y + '%';
       }
     };
+
     el.onmousedown = el.ontouchstart = (e) => {
-      if (e.touches && e.touches.length === 2) { sDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); sW = item.w; }
-      document.onmousemove = document.ontouchmove = move;
+      if (e.touches && e.touches.length === 2) {
+        startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        startW = item.w;
+      }
+      document.onmousemove = document.ontouchmove = handleMove;
       document.onmouseup = document.ontouchend = () => { document.onmousemove = document.ontouchmove = null; };
+    };
+
+    // Wheel Zoom (Desktop)
+    el.onwheel = (e) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -2 : 2;
+      item.w = Math.max(5, Math.min(300, item.w + delta));
+      el.style.width = item.w + '%';
     };
   });
 }
+
 function closeSlotModal() { renderMiniSlot(S.modalSlot); document.getElementById('slot-modal').classList.remove('open'); }
 function clearModalSlot() { S.slots[S.modalSlot] = []; renderModalCanvas(); }
 function renderMiniSlot(idx) {
   const fs = document.getElementById(`fs${idx}`); fs.innerHTML = '';
-  S.slots[idx].forEach(item => { 
-    const img = document.createElement('img'); img.src = S.celebs[item.ci].src; 
+  S.slots[idx].forEach(item => {
+    const img = document.createElement('img');
+    img.src = S.celebs[item.ci].src;
     img.style.cssText = `position:absolute; left:${item.x}%; top:${item.y}%; width:${item.w}%;`;
     fs.appendChild(img);
   });
 }
+
+/* Archive */
+function saveFrameToAlbum() {
+  if (S.frameAlbum.length >= 10) return alert("Full!");
+  S.frameAlbum.push({ mode: S.mode, ratio: S.camRatio, celebsSrc: S.celebs.map(c => c.src), slots: JSON.parse(JSON.stringify(S.slots)) });
+  localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum));
+  alert("Saved!");
+}
+function renderFrameAlbum() {
+  const grid = document.getElementById('album-grid'); grid.innerHTML = '';
+  document.getElementById('archive-lbl').textContent = `ARCHIVE (${S.frameAlbum.length}/10)`;
+  S.frameAlbum.forEach((f, idx) => {
+    const item = document.createElement('div');
+    item.className = 'card'; item.style.padding = '10px';
+    item.innerHTML = `<div style="aspect-ratio:1; background:#000; display:flex; align-items:center; justify-content:center; font-size:0.6rem; border:1px solid #333; margin-bottom:8px;">${f.mode.toUpperCase()} FRAME ${idx+1}</div>
+      <button class="btn btn-p" style="width:100%; padding:8px; font-size:0.7rem; margin-bottom:5px;" onclick="loadFrame(${idx})">LOAD</button>
+      <button class="btn btn-g" style="width:100%; padding:8px; font-size:0.7rem;" onclick="deleteFrame(${idx})">DEL</button>`;
+    grid.appendChild(item);
+  });
+}
+async function loadFrame(idx) {
+  const f = S.frameAlbum[idx]; S.mode = f.mode; S.camRatio = f.ratio; S.celebs = [];
+  for(let src of f.celebsSrc) { const i = new Image(); await new Promise(r=>{i.onload=r; i.src=src;}); S.celebs.push({img:i, src}); }
+  S.slots = JSON.parse(JSON.stringify(f.slots));
+  setMode(f.mode); applyRatioToUI(); S.slots.forEach((_, i) => renderMiniSlot(i)); renderStrip(); goTo(2);
+}
+function deleteFrame(idx) { S.frameAlbum.splice(idx,1); localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum)); renderFrameAlbum(); }
 
 /* Shoot */
 function startOverlay() {
@@ -296,11 +335,9 @@ function startOverlay() {
       const cel = S.celebs[item.ci]; const w = oc.width * (item.w/100); const h = w * (cel.img.height/cel.img.width);
       ctx.drawImage(cel.img, oc.width*(item.x/100), oc.height*(item.y/100), w, h);
     });
-  } S.raf = requestAnimationFrame(step); };
-  step();
+  } S.raf = requestAnimationFrame(step); }; step();
 }
 function stopOverlay() { cancelAnimationFrame(S.raf); }
-
 async function shoot() {
   if (S.cur >= 4) return;
   const cd = document.getElementById('cam-cd'); cd.textContent = '3'; cd.style.opacity = 1;
@@ -311,39 +348,29 @@ async function shoot() {
   ctx.save(); ctx.scale(-1, 1); ctx.drawImage(v, -hc.width, 0, hc.width, hc.height); ctx.restore();
   ctx.drawImage(document.getElementById('cam-cv'), 0, 0);
   S.shots[S.cur] = hc.toDataURL('image/jpeg', 0.9);
-  document.querySelectorAll('.th-box')[S.cur].innerHTML = `<img src="${S.shots[S.cur]}">`;
   S.cur++; document.getElementById('shot-lbl').textContent = `${S.cur} / 4 SHOTS`;
   if(S.cur === 4) setTimeout(() => goTo(4), 500);
 }
-function reshot() { S.cur = 0; S.shots = [null,null,null,null]; document.querySelectorAll('.th-box').forEach(el => el.innerHTML = ''); goTo(3); }
+function reshot() { S.cur = 0; S.shots = [null,null,null,null]; goTo(3); }
 
-/* Result */
+/* Result Builder (Reflecting Mode) */
 async function buildResult() {
   const wrap = document.getElementById('result-wrap'); wrap.innerHTML = '';
   const themes = [{bg:'#111', text:'#eee'}, {bg:'#fff', text:'#111'}];
   for(let t of themes) {
     const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
     const FW = 400, PAD = 25, GAP = 15;
-    
     if(S.mode === 'v') {
       const SW = FW - (PAD * 2), SH = SW / S.camRatio;
       canvas.width = FW; canvas.height = (PAD * 2) + (SH * 4) + (GAP * 3) + 100;
       ctx.fillStyle = t.bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      for(let i=0; i<4; i++) {
-        const img = await loadImg(S.shots[i]);
-        ctx.drawImage(img, PAD, PAD + (i * (SH + GAP)), SW, SH);
-      }
+      for(let i=0; i<4; i++) { const img = await loadImg(S.shots[i]); ctx.drawImage(img, PAD, PAD + (i * (SH + GAP)), SW, SH); }
     } else {
       const SW = (FW - (PAD * 2) - GAP) / 2, SH = SW / S.camRatio;
       canvas.width = FW; canvas.height = (PAD * 2) + (SH * 2) + GAP + 100;
       ctx.fillStyle = t.bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
-      for(let i=0; i<4; i++) {
-        const img = await loadImg(S.shots[i]);
-        const dx = PAD + (i % 2) * (SW + GAP), dy = PAD + Math.floor(i / 2) * (SH + GAP);
-        ctx.drawImage(img, dx, dy, SW, SH);
-      }
+      for(let i=0; i<4; i++) { const img = await loadImg(S.shots[i]); const dx = PAD + (i % 2) * (SW + GAP), dy = PAD + Math.floor(i / 2) * (SH + GAP); ctx.drawImage(img, dx, dy, SW, SH); }
     }
-    
     ctx.fillStyle = t.text; ctx.font = 'bold 20px Orbitron'; ctx.textAlign = 'center'; ctx.fillText('STUDIO BOOTH 4', FW/2, canvas.height - 40);
     const div = document.createElement('div'); div.className = 'film-card';
     const preview = document.createElement('canvas'); preview.width = canvas.width; preview.height = canvas.height;
