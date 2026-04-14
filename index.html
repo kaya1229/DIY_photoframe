@@ -180,6 +180,22 @@ function setMode(m) {
 function goTo(n) {
   const screens = ['home-screen', 'sc0', 'sc1', 'sc2', 'sc3', 'sc4', 'sc5'];
   let idx = (n === 'home') ? 0 : (typeof n === 'number' ? n + 1 : 6);
+  
+  // 1. 새로운 촬영 시작 시 데이터 초기화 (추가된 부분)
+  if (n === 0) {
+    S.slots = [[], [], [], []]; // 슬롯 배치 초기화
+    S.shots = [null, null, null, null]; // 촬영된 이미지 초기화
+    S.cur = 0; // 현재 촬영 순서 초기화
+    S.celebs = []; // 업로드된 이미지 리스트 초기화 (필요 시)
+    
+    // UI에 반영 (슬롯 비우기 및 업로드 리스트 비우기)
+    for (let i = 0; i < 4; i++) renderMiniSlot(i);
+    renderStrip();
+    document.getElementById('shot-lbl').textContent = `0 / 4 SHOTS`;
+    document.getElementById('btn1').disabled = false; // 업로드 단계 버튼 활성화 상태 유지
+  }
+
+  // 화면 전환 로직
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(screens[idx]).classList.add('active');
   document.getElementById('global-header').style.display = (idx === 0) ? 'none' : 'flex';
