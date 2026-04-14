@@ -330,40 +330,94 @@ function renderModalPicker() {
 }
 function addToSlot(ci) { S.slots[S.modalSlot].push({ ci, x: 25, y: 25, w: 50 }); renderModalCanvas(); }
 
+// ... (이전 스타일 및 HTML 구조 유지) ...
+
 function renderModalCanvas() {
   const container = document.getElementById('slot-modal-canvas');
   container.innerHTML = '';
+  
   S.slots[S.modalSlot].forEach((item, i) => {
-    const el = document.createElement('div'); el.className = 'cdrag';
-    el.style.cssText = `left:${item.x}%; top:${item.y}%; width:${item.w}%;`;
-    const img = document.createElement('img'); img.src = S.celebs[item.ci].src;
-    el.appendChild(img); container.appendChild(el);
+    const el = document.createElement('div'); 
+    el.className = 'cdrag';
+    // 초기 위치 및 크기 설정
+    el.style.cssText = `left:${item.x}%; top:${item.y}%; width:${item.w}%; position:absolute; user-select:none; cursor:move;`;
+    
+    const img = document.createElement('img'); 
+    img.src = S.celebs[item.ci].src;
+    img.style.width = '100%';
+    img.style.display = 'block';
+    img.style.pointerEvents = 'none'; // 이미지가 드래그 이벤트를 방해하지 않도록
+    
+    el.appendChild(img); 
+    container.appendChild(el);
 
     let startDist = 0, startW = 0;
+
     const handleMove = (e) => {
-      e.preventDefault(); const rect = container.getBoundingClientRect(); const ts = e.touches;
+      e.preventDefault();
+      const rect = container.getBoundingClientRect();
+      const ts = e.touches;
+
       if (ts && ts.length === 2) {
-        const d = Math.hypot(ts[0].clientX-ts[1].clientX, ts[0].clientY-ts[1].clientY);
-        item.w = Math.max(5, Math.min(300, startW * (d / startDist))); el.style.width = item.w + '%';
+        // 1. 모바일 핀치 줌 (두 손가락)
+        const d = Math.hypot(ts[0].clientX - ts[1].clientX, ts[0].clientY - ts[1].clientY);
+        if (startDist === 0) startDist = d; // 초기 거리 설정
+        item.w = Math.max(5, Math.min(300, startW * (d / startDist)));
+        el.style.width = item.w + '%';
       } else {
+        // 2. 드래그 로직 (마우스 또는 한 손가락)
         const t = ts ? ts[0] : e;
-        item.x = ((t.clientX - rect.left) / rect.width * 100) - (item.w / 2);
-        const hP = (item.w * (img.naturalHeight / img.naturalWidth)) / S.camRatio;
-        item.y = ((t.clientY - rect.top) / rect.height * 100) - (hP / 2);
-        el.style.left = item.x + '%'; el.style.top = item.y + '%';
+        const x = ((t.clientX - rect.left) / rect.width) * 100;
+        const y = ((t.clientY - rect.top) / rect.height) * 100;
+        
+        // 이미지의 중심이 마우스/손가락 끝에 오도록 조정
+        item.x = x - (item.w / 2);
+        // 세로 비율 계산 (이미지 원본 비율과 컨테이너 비율 고려)
+        const imgAspect = img.naturalHeight / img.naturalWidth;
+        const hP = (item.w * imgAspect) / S.camRatio;
+        item.y = y - (hP / 2);
+
+        el.style.left = item.x + '%'; 
+        el.style.top = item.y + '%';
       }
     };
+
+    // 마우스 및 터치 시작 이벤트
     el.onmousedown = el.ontouchstart = (e) => {
-      if (e.touches && e.touches.length === 2) { startDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); startW = item.w; }
-      document.onmousemove = document.ontouchmove = handleMove;
-      document.onmouseup = document.ontouchend = () => { document.onmousemove = null; document.ontouchmove = null; };
+      if (e.touches && e.touches.length === 2) {
+        startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        startW = item.w;
+      }
+      
+      // 드래그 중에는 컨테이너 전체에서 이벤트를 추적해야 끊기지 않음
+      document.addEventListener('mousemove', handleMove, {passive: false});
+      document.addEventListener('touchmove', handleMove, {passive: false});
+      
+      document.onmouseup = document.ontouchend = () => {
+        document.removeEventListener('mousemove', handleMove);
+        document.removeEventListener('touchmove', handleMove);
+        document.onmouseup = null;
+        document.ontouchend = null;
+        startDist = 0; // 초기화
+      };
     };
+
+    // 3. PC 휠 줌 (마우스 휠)
     el.onwheel = (e) => {
-      e.preventDefault(); const delta = e.deltaY > 0 ? -3 : 3;
-      item.w = Math.max(5, Math.min(300, item.w + delta)); el.style.width = item.w + '%';
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -3 : 3; // 휠 방향에 따라 크기 조절
+      item.w = Math.max(5, Math.min(300, item.w + delta));
+      el.style.width = item.w + '%';
+      
+      // 크기가 변할 때 중심 좌표도 살짝 유지되도록 처리 (선택사항)
+      const imgAspect = img.naturalHeight / img.naturalWidth;
+      const hP = (item.w * imgAspect) / S.camRatio;
+      el.style.top = item.y + '%'; 
     };
   });
 }
+
+// ... (이하 동일) ...
 
 function closeSlotModal() { renderMiniSlot(S.modalSlot); document.getElementById('slot-modal').classList.remove('open'); }
 function clearModalSlot() { S.slots[S.modalSlot] = []; renderModalCanvas(); }
