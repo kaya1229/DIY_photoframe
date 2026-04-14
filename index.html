@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>BOOTH 4 CUTS - PRO BUILDER</title>
+<title>BOOTH 4 CUTS</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -52,20 +52,31 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 .btw { justify-content: space-between; }
 .center { justify-content: center; }
 .mt { margin-top: 15px; }
+
+/* Home Screen Specific */
+#home-screen { text-align: center; padding-top: 60px; }
+#home-screen h1 { font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 40px; color: var(--accent); }
+.main-nav-btn { width: 100%; padding: 25px; margin-bottom: 15px; font-size: 1.1rem; letter-spacing: 1px; }
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="hd">
+  <div class="hd" id="global-header" style="display:none;">
     <div class="logo" onclick="location.reload()">BOOTH 4</div>
     <button class="hd-album" onclick="goTo(4)">FRAME ARCHIVE</button>
   </div>
 
-  <div class="steps">
+  <div class="steps" id="step-bar" style="display:none;">
     <div class="si on" id="si0"></div><div class="si" id="si1"></div><div class="si" id="si2"></div><div class="si" id="si3"></div>
   </div>
 
-  <div class="screen active" id="sc0">
+  <div class="screen active" id="home-screen">
+    <h1>STUDIO<br>BOOTH 4</h1>
+    <button class="btn btn-p main-nav-btn" onclick="goTo(0)">START SHOOTING</button>
+    <button class="btn btn-g main-nav-btn" onclick="goTo(4)">FRAME ARCHIVE</button>
+  </div>
+
+  <div class="screen" id="sc0">
     <div class="card">
       <div class="card-lbl">1. UPLOAD ELEMENTS</div>
       <label for="celebInput">
@@ -81,7 +92,7 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 
   <div class="screen" id="sc1">
     <div class="card">
-      <div class="card-lbl">2. ARRANGE & ZOOM (PINCH TO ZOOM)</div>
+      <div class="card-lbl">2. ARRANGE & ZOOM</div>
       <div id="frame-builder" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         <div class="fslot" id="fs0" onclick="openSlotModal(0)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
         <div class="fslot" id="fs1" onclick="openSlotModal(1)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
@@ -123,8 +134,7 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
     <div class="card">
       <div class="card-lbl">SAVED ARCHIVE (0/5)</div>
       <div id="album-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
-      <button class="btn btn-g mt" style="width:100%" onclick="goTo(0)">NEW</button>
-    </div>
+      </div>
   </div>
 </div>
 
@@ -149,14 +159,59 @@ const S = {
 };
 
 function goTo(n) {
-  document.querySelectorAll('.screen').forEach((s, i) => s.classList.toggle('active', i === n));
-  document.querySelectorAll('.si').forEach((s, i) => { s.classList.toggle('on', i === n); s.classList.toggle('dn', i < n); });
+  // 홈 화면인 경우 헤더와 스텝바 숨김
+  const isHome = n === 'home';
+  document.getElementById('home-screen').classList.toggle('active', isHome);
+  document.getElementById('global-header').style.display = isHome ? 'none' : 'flex';
+  
+  // 촬영/배치 단계에서만 스텝 바 표시 (0,1,2,3)
+  const isProcess = typeof n === 'number' && n <= 3;
+  document.getElementById('step-bar').style.display = isProcess ? 'flex' : 'none';
+
+  document.querySelectorAll('.screen').forEach((s, i) => {
+    if(n === 'home') s.classList.toggle('active', s.id === 'home-screen');
+    else s.classList.toggle('active', i === (n + 1)); // home이 index 0이므로 보정
+  });
+
   if(n === 2) initCam(); else stopOverlay();
   if(n === 3) buildResult();
   if(n === 4) renderFrameAlbum();
+  
+  // 스텝바 업데이트
+  if(isProcess) {
+    document.querySelectorAll('.si').forEach((s, i) => {
+      s.classList.toggle('on', i === n);
+      s.classList.toggle('dn', i < n);
+    });
+  }
 }
 
-/* Upload */
+// 초기 goTo 설정 (숫자 인덱스 수정에 따른 매핑)
+function goTo(n) {
+  const screens = ['home-screen', 'sc0', 'sc1', 'sc2', 'sc3', 'sc4'];
+  const targetId = n === 'home' ? screens[0] : (typeof n === 'number' ? screens[n+1] : 'sc4');
+  
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(targetId).classList.add('active');
+
+  const isHome = n === 'home';
+  const isArchive = n === 4;
+  document.getElementById('global-header').style.display = isHome ? 'none' : 'flex';
+  document.getElementById('step-bar').style.display = (!isHome && !isArchive) ? 'flex' : 'none';
+
+  if(n === 2) initCam(); else stopOverlay();
+  if(n === 3) buildResult();
+  if(n === 4) renderFrameAlbum();
+
+  if(typeof n === 'number' && n <= 3) {
+    document.querySelectorAll('.si').forEach((s, i) => {
+      s.classList.toggle('on', i === n);
+      s.classList.toggle('dn', i < n);
+    });
+  }
+}
+
+/* Upload Logic */
 document.getElementById('celebInput').addEventListener('change', e => {
   [...e.target.files].forEach(f => {
     if (f.size > 1.5 * 1024 * 1024) return alert("1.5MB 이하만 가능합니다.");
@@ -174,74 +229,7 @@ function renderStrip() {
   document.getElementById('celeb-strip').innerHTML = S.celebs.map(c => `<img src="${c.src}" style="height:50px; border:1px solid #333; border-radius:4px; margin-right:5px;">`).join('');
 }
 
-/* Modal Drag & Pinch Zoom */
-function openSlotModal(idx) { S.modalSlot = idx; renderModalCanvas(); renderModalPicker(); document.getElementById('slot-modal').classList.add('open'); }
-function renderModalPicker() { document.getElementById('modal-picker').innerHTML = S.celebs.map((c, i) => `<img src="${c.src}" onclick="addToSlot(${i})" style="height:45px; border:1px solid #444; margin:0 5px; cursor:pointer;">`).join(''); }
-function addToSlot(ci) { S.slots[S.modalSlot].push({ ci, x: 25, y: 10, w: 50 }); renderModalCanvas(); }
-
-function renderModalCanvas() {
-  const container = document.getElementById('slot-modal-canvas');
-  container.innerHTML = '';
-  
-  S.slots[S.modalSlot].forEach((item, i) => {
-    const el = document.createElement('div');
-    el.className = 'cdrag';
-    el.style.left = item.x + '%'; el.style.top = item.y + '%'; el.style.width = item.w + '%';
-    const img = document.createElement('img'); img.src = S.celebs[item.ci].src;
-    el.appendChild(img);
-    container.appendChild(el);
-
-    let startDist = 0, startW = 0;
-
-    // Mouse Wheel Zoom
-    el.onwheel = (e) => {
-      e.preventDefault();
-      const delta = e.deltaY > 0 ? -2 : 2;
-      item.w = Math.max(5, Math.min(200, item.w + delta));
-      el.style.width = item.w + '%';
-    };
-
-    // Drag & Pinch Logic
-    const move = (e) => {
-      const rect = container.getBoundingClientRect();
-      if (e.touches && e.touches.length === 2) {
-        // Pinch Zoom
-        const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-        item.w = Math.max(5, Math.min(200, startW * (d / startDist)));
-        el.style.width = item.w + '%';
-      } else {
-        // Drag
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        item.x = ((clientX - rect.left - (el.offsetWidth/2)) / rect.width) * 100;
-        item.y = ((clientY - rect.top - (el.offsetHeight/2)) / rect.height) * 100;
-        el.style.left = item.x + '%'; el.style.top = item.y + '%';
-      }
-    };
-
-    el.onmousedown = el.ontouchstart = (e) => {
-      if (e.touches && e.touches.length === 2) {
-        startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-        startW = item.w;
-      }
-      document.onmousemove = document.ontouchmove = move;
-      document.onmouseup = document.ontouchend = () => { document.onmousemove = document.ontouchmove = null; };
-    };
-  });
-}
-
-function closeSlotModal() { renderMiniSlot(S.modalSlot); document.getElementById('slot-modal').classList.remove('open'); }
-function clearModalSlot() { S.slots[S.modalSlot] = []; renderModalCanvas(); }
-function renderMiniSlot(idx) {
-  const fs = document.getElementById(`fs${idx}`); fs.innerHTML = '';
-  S.slots[idx].forEach(item => { 
-    const img = document.createElement('img'); img.src = S.celebs[item.ci].src; 
-    img.style.cssText = `position:absolute; left:${item.x}%; top:${item.y}%; width:${item.w}%;`;
-    fs.appendChild(img);
-  });
-}
-
-/* Save & Load */
+/* Save & Load Archive */
 function saveFrameToAlbum() {
   if (S.frameAlbum.length >= 5) return alert("저장 공간 가득 참(5개)");
   const frameData = { id: Date.now(), celebsSrc: S.celebs.map(c => c.src), slots: JSON.parse(JSON.stringify(S.slots)) };
@@ -253,6 +241,8 @@ function saveFrameToAlbum() {
 function renderFrameAlbum() {
   const grid = document.getElementById('album-grid'); grid.innerHTML = '';
   document.querySelector('#sc4 .card-lbl').textContent = `SAVED ARCHIVE (${S.frameAlbum.length}/5)`;
+  if(S.frameAlbum.length === 0) grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#444;">저장된 프레임이 없습니다.</div>';
+  
   S.frameAlbum.forEach((frame, idx) => {
     const item = document.createElement('div'); item.className = 'album-item';
     item.innerHTML = `
@@ -276,12 +266,49 @@ async function loadFrame(idx) {
   for(let s of f.celebsSrc) { const i = new Image(); await new Promise(r=>{i.onload=r; i.src=s;}); S.celebs.push({img:i, src:s}); }
   S.slots = JSON.parse(JSON.stringify(f.slots));
   S.slots.forEach((_, i) => renderMiniSlot(i));
-  renderStrip(); goTo(1);
+  renderStrip(); goTo(2); // 촬영으로 바로 이동
 }
 
 function deleteFrame(idx, e) { e.stopPropagation(); S.frameAlbum.splice(idx,1); localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum)); renderFrameAlbum(); }
 
-/* Shoot & Result (이전 로직 동일) */
+/* --- 기존 배치/촬영 로직 그대로 유지 --- */
+function openSlotModal(idx) { S.modalSlot = idx; renderModalCanvas(); renderModalPicker(); document.getElementById('slot-modal').classList.add('open'); }
+function renderModalPicker() { document.getElementById('modal-picker').innerHTML = S.celebs.map((c, i) => `<img src="${c.src}" onclick="addToSlot(${i})" style="height:45px; border:1px solid #444; margin:0 5px; cursor:pointer;">`).join(''); }
+function addToSlot(ci) { S.slots[S.modalSlot].push({ ci, x: 25, y: 10, w: 50 }); renderModalCanvas(); }
+function renderModalCanvas() {
+  const container = document.getElementById('slot-modal-canvas'); container.innerHTML = '';
+  S.slots[S.modalSlot].forEach((item, i) => {
+    const el = document.createElement('div'); el.className = 'cdrag'; el.style.left = item.x + '%'; el.style.top = item.y + '%'; el.style.width = item.w + '%';
+    const img = document.createElement('img'); img.src = S.celebs[item.ci].src; el.appendChild(img); container.appendChild(el);
+    let startDist = 0, startW = 0;
+    el.onwheel = (e) => { e.preventDefault(); const delta = e.deltaY > 0 ? -2 : 2; item.w = Math.max(5, Math.min(200, item.w + delta)); el.style.width = item.w + '%'; };
+    const move = (e) => {
+      const rect = container.getBoundingClientRect();
+      if (e.touches && e.touches.length === 2) {
+        const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        item.w = Math.max(5, Math.min(200, startW * (d / startDist))); el.style.width = item.w + '%';
+      } else {
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        item.x = ((clientX - rect.left - (el.offsetWidth/2)) / rect.width) * 100; item.y = ((clientY - rect.top - (el.offsetHeight/2)) / rect.height) * 100;
+        el.style.left = item.x + '%'; el.style.top = item.y + '%';
+      }
+    };
+    el.onmousedown = el.ontouchstart = (e) => {
+      if (e.touches && e.touches.length === 2) { startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); startW = item.w; }
+      document.onmousemove = document.ontouchmove = move; document.onmouseup = document.ontouchend = () => { document.onmousemove = document.ontouchmove = null; };
+    };
+  });
+}
+function closeSlotModal() { renderMiniSlot(S.modalSlot); document.getElementById('slot-modal').classList.remove('open'); }
+function clearModalSlot() { S.slots[S.modalSlot] = []; renderModalCanvas(); }
+function renderMiniSlot(idx) {
+  const fs = document.getElementById(`fs${idx}`); fs.innerHTML = '';
+  S.slots[idx].forEach(item => { 
+    const img = document.createElement('img'); img.src = S.celebs[item.ci].src; 
+    img.style.cssText = `position:absolute; left:${item.x}%; top:${item.y}%; width:${item.w}%;`;
+    fs.appendChild(img);
+  });
+}
 async function initCam() { const v = document.getElementById('video'); if (!S.stream) { S.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false }); v.srcObject = S.stream; } startOverlay(); }
 function startOverlay() {
   const oc = document.getElementById('cam-cv'), ctx = oc.getContext('2d'), v = document.getElementById('video');
@@ -302,7 +329,6 @@ async function shoot() {
   if(S.cur === 4) { document.getElementById('btn-shoot').style.display = 'none'; document.getElementById('btn-done').style.display = 'inline-flex'; }
 }
 function reshot() { S.cur = 0; S.shots = [null,null,null,null]; document.querySelectorAll('.th-box').forEach(el => el.innerHTML = ''); document.getElementById('shot-lbl').textContent = `0 / 4 SHOTS`; document.getElementById('btn-shoot').style.display = 'inline-flex'; document.getElementById('btn-done').style.display = 'none'; goTo(2); }
-
 async function buildResult() {
   const wrap = document.getElementById('result-wrap'); wrap.innerHTML = '';
   const themes = [{bg:'#111', text:'#eee'}, {bg:'#fff', text:'#111'}];
