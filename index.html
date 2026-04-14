@@ -43,7 +43,7 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 .slot-modal-bg.open { display:flex; }
 .slot-modal { background:var(--card); border:1px solid var(--border); border-radius:8px; width:100%; max-width:400px; padding:20px; }
 .slot-modal-canvas { width:100%; background:#000; position:relative; overflow:hidden; aspect-ratio:4/3; margin-bottom:15px; border: 1px solid #333; touch-action: none; }
-.cdrag { position:absolute; user-select:none; }
+.cdrag { position:absolute; user-select:none; will-change: transform, width, top, left; }
 .cdrag img { width:100%; display:block; pointer-events:none; }
 
 .screen { display:none; }
@@ -221,6 +221,7 @@ function renderModalCanvas() {
     el.onwheel = (e) => { e.preventDefault(); item.w = Math.max(5, Math.min(200, item.w + (e.deltaY > 0 ? -2 : 2))); el.style.width = item.w + '%'; };
     
     const move = (e) => {
+      e.preventDefault();
       const rect = container.getBoundingClientRect();
       if (e.touches && e.touches.length === 2) {
         const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
@@ -228,6 +229,7 @@ function renderModalCanvas() {
       } else {
         const cx = e.touches ? e.touches[0].clientX : e.clientX;
         const cy = e.touches ? e.touches[0].clientY : e.clientY;
+        // % 좌표 정밀도 향상
         item.x = ((cx - rect.left - (el.offsetWidth/2)) / rect.width) * 100;
         item.y = ((cy - rect.top - (el.offsetHeight/2)) / rect.height) * 100;
         el.style.left = item.x + '%'; el.style.top = item.y + '%';
@@ -252,7 +254,7 @@ function renderMiniSlot(idx) {
   });
 }
 
-/* Save & Archive */
+/* Archive Logic */
 function saveFrameToAlbum() {
   if (S.frameAlbum.length >= 5) return alert("저장 공간 가득 참(5개)");
   S.frameAlbum.push({ id: Date.now(), celebsSrc: S.celebs.map(c => c.src), slots: JSON.parse(JSON.stringify(S.slots)) });
@@ -264,7 +266,7 @@ function renderFrameAlbum() {
   const grid = document.getElementById('album-grid'); grid.innerHTML = '';
   document.querySelector('#sc4 .card-lbl').textContent = `SAVED ARCHIVE (${S.frameAlbum.length}/5)`;
   S.frameAlbum.forEach((f, idx) => {
-    const item = document.createElement('div'); item.className = 'album-item';
+    const item = document.createElement('div');
     item.style.cssText = "background:#000; padding:10px; border:1px solid #333; border-radius:4px;";
     item.innerHTML = `
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; background:#111; padding:4px;">
@@ -291,7 +293,7 @@ async function loadFrame(idx) {
 
 function deleteFrame(idx, e) { e.stopPropagation(); S.frameAlbum.splice(idx,1); localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum)); renderFrameAlbum(); }
 
-/* Shoot & Result */
+/* Shoot Logic */
 async function initCam() { const v = document.getElementById('video'); if (!S.stream) { S.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false }); v.srcObject = S.stream; } startOverlay(); }
 function startOverlay() {
   const oc = document.getElementById('cam-cv'), ctx = oc.getContext('2d'), v = document.getElementById('video');
@@ -318,10 +320,7 @@ async function shoot() {
   S.shots[S.cur] = hc.toDataURL('image/jpeg', 0.9);
   document.querySelectorAll('.th-box')[S.cur].innerHTML = `<img src="${S.shots[S.cur]}">`;
   S.cur++; document.getElementById('shot-lbl').textContent = `${S.cur} / 4 SHOTS`;
-  
-  if(S.cur === 4) { 
-    setTimeout(() => goTo(3), 500); // 4장 다 찍으면 자동 이동
-  }
+  if(S.cur === 4) setTimeout(() => goTo(3), 500);
 }
 
 function reshot() { S.cur = 0; S.shots = [null,null,null,null]; document.querySelectorAll('.th-box').forEach(el => el.innerHTML = ''); document.getElementById('shot-lbl').textContent = `0 / 4 SHOTS`; goTo(2); }
@@ -329,48 +328,31 @@ function reshot() { S.cur = 0; S.shots = [null,null,null,null]; document.querySe
 async function buildResult() {
   const wrap = document.getElementById('result-wrap'); wrap.innerHTML = '';
   const themes = [{bg:'#111', text:'#eee'}, {bg:'#fff', text:'#111'}];
-  
   for(let t of themes) {
     const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
     const FW = 360, PAD = 25, GAP = 15, SW = FW - (PAD * 2), SH = SW * 0.75;
     canvas.width = FW; canvas.height = (PAD * 2) + (SH * 4) + (GAP * 3) + 100;
-    
     ctx.fillStyle = t.bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    for(let i=0; i<4; i++) {
-      if(S.shots[i]) {
-        const img = await new Promise(res => { const img = new Image(); img.onload=()=>res(img); img.src=S.shots[i]; });
-        ctx.drawImage(img, PAD, PAD + (i * (SH + GAP)), SW, SH);
-      }
-    }
-    // 노이즈 효과
-    const idat = ctx.getImageData(0,0,canvas.width,canvas.height), d = idat.data;
-    for(let i=0; i<d.length; i+=4) { const r = (Math.random()-0.5)*10; d[i]+=r; d[i+1]+=r; d[i+2]+=r; }
-    ctx.putImageData(idat, 0, 0);
-    
-    ctx.fillStyle = t.text; ctx.font = 'bold 20px Orbitron'; ctx.textAlign = 'center';
-    ctx.fillText('STUDIO BOOTH 4', FW/2, canvas.height - 40);
+    for(let i=0; i<4; i++) { if(S.shots[i]) { const img = await new Promise(res => { const img = new Image(); img.onload=()=>res(img); img.src=S.shots[i]; }); ctx.drawImage(img, PAD, PAD + (i * (SH + GAP)), SW, SH); } }
+    ctx.fillStyle = t.text; ctx.font = 'bold 20px Orbitron'; ctx.textAlign = 'center'; ctx.fillText('STUDIO BOOTH 4', FW/2, canvas.height - 40);
     
     const div = document.createElement('div'); div.className = 'film-card';
     const preview = document.createElement('canvas');
-    preview.width = canvas.width; preview.height = canvas.height;
+    preview.width = FW; preview.height = canvas.height;
     preview.getContext('2d').drawImage(canvas, 0, 0);
     preview.style.width = "120px";
     div.appendChild(preview);
     
-    div.onclick = () => { 
+    div.addEventListener('click', () => {
       document.querySelectorAll('.film-card').forEach(c => c.classList.remove('picked'));
       div.classList.add('picked');
       S.picked_data = canvas.toDataURL('image/jpeg', 0.9);
       document.getElementById('btn-dl').disabled = false;
-    };
+    });
     wrap.appendChild(div);
   }
 }
-
-function dlPicked() { 
-  if(!S.picked_data) return;
-  const a = document.createElement('a'); a.download = 'booth4.jpg'; a.href = S.picked_data; a.click();
-}
+function dlPicked() { if(!S.picked_data) return; const a = document.createElement('a'); a.download = 'booth4.jpg'; a.href = S.picked_data; a.click(); }
 </script>
 </body>
 </html>
