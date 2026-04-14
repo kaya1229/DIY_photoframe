@@ -11,39 +11,36 @@
   --text-dim: #888888; --border: #222222; --sh: 0 0 20px rgba(255, 0, 122, 0.2);
 }
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-.app { position:relative; max-width:500px; margin:0 auto; padding:20px 16px 100px; }
+body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; touch-action: manipulation; }
+.app { max-width:500px; margin:0 auto; padding:20px 16px 100px; }
 
-/* UI */
+/* Header & Steps */
 .hd { display:none; justify-content:space-between; align-items:center; padding:10px 0 30px; }
-.logo { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; letter-spacing: 2px; color: var(--accent); text-shadow: var(--sh); cursor:pointer; }
-.hd-album { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+.logo { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; color: var(--accent); cursor:pointer; }
+.hd-album { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 4px; font-size: 0.8rem; }
 .steps { display:none; gap:8px; margin-bottom:24px; }
 .si { flex:1; height:4px; background:var(--border); border-radius:2px; }
 .si.on { background: var(--accent); box-shadow: var(--sh); }
-.si.dn { background: #444; }
+
+/* Common UI */
 .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
-.card-lbl { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); margin-bottom: 16px; letter-spacing: 1px; text-transform: uppercase; }
-.btn { display: inline-flex; align-items: center; justify-content: center; padding: 14px 24px; border-radius: 4px; font-weight: 800; font-size: 0.9rem; border: none; cursor: pointer; transition: 0.2s; }
-.btn-p { background: var(--accent); color: white; box-shadow: 0 4px 0 #990049; }
-.btn-p:active { transform: translateY(2px); box-shadow: 0 2px 0 #990049; }
-.btn-p:disabled { background: #444; box-shadow: none; opacity: 0.5; }
+.card-lbl { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); margin-bottom: 16px; letter-spacing: 1px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 14px 24px; border-radius: 4px; font-weight: 800; font-size: 0.9rem; border: none; cursor: pointer; }
+.btn-p { background: var(--accent); color: white; }
 .btn-g { background: #222; color: #fff; border: 1px solid #333; }
 
-/* Camera */
-#cam-wrap { position:relative; background:#000; border: 4px solid #222; border-radius: 4px; overflow: hidden; aspect-ratio: 4/3; }
+/* Camera Area - 핵심 수정 */
+#cam-wrap { position:relative; background:#000; border: 4px solid #222; border-radius: 4px; overflow: hidden; aspect-ratio: 4/3; width: 100%; }
 #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 #cam-cv { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
-#cam-cd { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:6rem; font-family:'Orbitron'; color:var(--accent); opacity:0; pointer-events:none; z-index:10; }
-.th-box { width:60px; height:45px; background:#222; border-radius:2px; overflow:hidden; border:1px solid #333; }
-.th-box img { width:100%; height:100%; object-fit:cover; }
+#cam-cd { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:6rem; color:var(--accent); opacity:0; pointer-events:none; z-index:10; }
 
-/* Modal & Drag */
-.slot-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:500; align-items:center; justify-content:center; padding:20px; }
+/* Modal & Placement - 핵심 수정 */
+.slot-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:1000; align-items:center; justify-content:center; }
 .slot-modal-bg.open { display:flex; }
-.slot-modal { background:var(--card); border:1px solid var(--border); border-radius:8px; width:100%; max-width:400px; padding:20px; }
-.slot-modal-canvas { width:100%; background:#000; position:relative; overflow:hidden; aspect-ratio:4/3; margin-bottom:15px; border: 1px solid #333; touch-action: none; }
-.cdrag { position:absolute; user-select:none; will-change: transform, width, top, left; }
+.slot-modal { background:var(--card); width:90%; max-width:400px; padding:20px; border-radius:12px; }
+.slot-modal-canvas { width:100%; background:#000; position:relative; overflow:hidden; aspect-ratio:4/3; border: 1px solid #333; touch-action: none; }
+.cdrag { position:absolute; will-change: transform; cursor: move; }
 .cdrag img { width:100%; display:block; pointer-events:none; }
 
 .screen { display:none; }
@@ -53,13 +50,15 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 .center { justify-content: center; }
 .mt { margin-top: 15px; }
 
+/* Home */
 #home-screen { text-align: center; padding-top: 80px; }
-#home-screen h1 { font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 40px; color: var(--accent); text-shadow: var(--sh); }
+#home-screen h1 { font-family: 'Orbitron'; font-size: 2.5rem; margin-bottom: 40px; color: var(--accent); }
 .main-nav-btn { width: 100%; padding: 25px; margin-bottom: 15px; font-size: 1.1rem; }
 
-#result-wrap { display: flex; gap: 20px; overflow-x: auto; padding: 20px 0; justify-content: center; }
-.film-card { flex-shrink: 0; border: 3px solid transparent; cursor: pointer; transition: 0.2s; padding: 5px; }
-.film-card.picked { border-color: var(--accent); box-shadow: var(--sh); }
+/* Result */
+#result-wrap { display: flex; gap: 15px; overflow-x: auto; padding: 10px; justify-content: center; }
+.film-card { flex-shrink: 0; border: 3px solid transparent; cursor: pointer; }
+.film-card.picked { border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -68,10 +67,7 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
     <div class="logo" onclick="location.reload()">BOOTH 4</div>
     <button class="hd-album" onclick="goTo(0)">NEW FRAME</button>
   </div>
-
-  <div class="steps" id="step-bar">
-    <div class="si on"></div><div class="si"></div><div class="si"></div><div class="si"></div>
-  </div>
+  <div class="steps" id="step-bar"><div class="si on"></div><div class="si"></div><div class="si"></div><div class="si"></div></div>
 
   <div class="screen active" id="home-screen">
     <h1>STUDIO<br>BOOTH 4</h1>
@@ -81,73 +77,47 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 
   <div class="screen" id="sc0">
     <div class="card">
-      <div class="card-lbl">1. UPLOAD ELEMENTS</div>
-      <label for="celebInput">
-        <div style="border: 2px dashed #333; padding: 40px 20px; text-align: center; border-radius: 8px; cursor: pointer;">
-          <p style="font-weight:600;">클릭하여 PNG/GIF 업로드</p>
-        </div>
-      </label>
-      <input type="file" id="celebInput" accept="image/*" multiple>
-      <div id="celeb-strip" class="row mt" style="overflow-x:auto; padding-bottom:10px;"></div>
-      <button class="btn btn-p mt" id="btn0" style="width:100%" disabled onclick="goTo(1)">배치하기 →</button>
+      <div class="card-lbl">1. UPLOAD PNG/GIF</div>
+      <label for="celebInput"><div style="border: 2px dashed #333; padding: 40px; text-align: center; border-radius: 8px;">TAP TO UPLOAD</div></label>
+      <input type="file" id="celebInput" accept="image/*" multiple style="display:none">
+      <div id="celeb-strip" class="row mt" style="overflow-x:auto;"></div>
+      <button class="btn btn-p mt" id="btn0" style="width:100%" disabled onclick="goTo(1)">ARRANGE →</button>
     </div>
   </div>
 
   <div class="screen" id="sc1">
     <div class="card">
-      <div class="card-lbl">2. ARRANGE & ZOOM</div>
+      <div class="card-lbl">2. SET FRAME SLOTS</div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         <div class="fslot" id="fs0" onclick="openSlotModal(0)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
         <div class="fslot" id="fs1" onclick="openSlotModal(1)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
         <div class="fslot" id="fs2" onclick="openSlotModal(2)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
         <div class="fslot" id="fs3" onclick="openSlotModal(3)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
       </div>
-      <div class="row btw mt">
-        <button class="btn btn-g" onclick="saveFrameToAlbum()">프레임 저장</button>
-        <button class="btn btn-p" onclick="goTo(2)">촬영 시작 →</button>
-      </div>
+      <div class="row btw mt"><button class="btn btn-g" onclick="saveFrameToAlbum()">SAVE</button><button class="btn btn-p" onclick="goTo(2)">SHOOT →</button></div>
     </div>
   </div>
 
   <div class="screen" id="sc2">
     <div class="card">
-      <div class="btw row" style="margin-bottom:15px;"><div class="card-lbl" id="shot-lbl" style="margin:0">0 / 4 SHOTS</div></div>
+      <div class="btw row" style="margin-bottom:15px;"><div class="card-lbl" id="shot-lbl">0 / 4 SHOTS</div></div>
       <div id="cam-wrap"><video id="video" autoplay playsinline muted></video><canvas id="cam-cv"></canvas><div id="cam-cd"></div></div>
       <div class="row center mt" id="thumb-row" style="gap:5px;"><div class="th-box"></div><div class="th-box"></div><div class="th-box"></div><div class="th-box"></div></div>
-      <div class="row center mt">
-        <button class="btn btn-p" id="btn-shoot" style="width:100%" onclick="shoot()">📸 SHOOT</button>
-      </div>
+      <button class="btn btn-p mt" id="btn-shoot" style="width:100%" onclick="shoot()">📸 SHOOT</button>
     </div>
   </div>
 
-  <div class="screen" id="sc3">
-    <div class="card">
-      <div class="card-lbl">SELECT YOUR FILM</div>
-      <div id="result-wrap"></div>
-      <div class="row btw mt">
-        <button class="btn btn-g" onclick="reshot()">RE-SHOOT</button>
-        <button class="btn btn-p" id="btn-dl" disabled onclick="dlPicked()">DOWNLOAD</button>
-      </div>
-    </div>
-  </div>
+  <div class="screen" id="sc3"><div class="card"><div class="card-lbl">CHOOSE FILM</div><div id="result-wrap"></div><div class="row btw mt"><button class="btn btn-g" onclick="reshot()">RE-SHOOT</button><button class="btn btn-p" id="btn-dl" disabled onclick="dlPicked()">DOWNLOAD</button></div></div></div>
 
-  <div class="screen" id="sc4">
-    <div class="card">
-      <div class="card-lbl">SAVED ARCHIVE (0/5)</div>
-      <div id="album-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
-    </div>
-  </div>
+  <div class="screen" id="sc4"><div class="card"><div class="card-lbl">ARCHIVE</div><div id="album-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div></div></div>
 </div>
 
 <div class="slot-modal-bg" id="slot-modal">
   <div class="slot-modal">
-    <div class="card-lbl">MOVE & ZOOM</div>
+    <div class="card-lbl">DRAG & ZOOM</div>
     <div class="slot-modal-canvas" id="slot-modal-canvas"></div>
     <div class="row center mt" id="modal-picker" style="overflow-x:auto;"></div>
-    <div class="row btw mt">
-      <button class="btn btn-g" onclick="clearModalSlot()">CLEAR</button>
-      <button class="btn btn-p" onclick="closeSlotModal()">DONE</button>
-    </div>
+    <div class="row btw mt"><button class="btn btn-g" onclick="clearModalSlot()">CLEAR</button><button class="btn btn-p" onclick="closeSlotModal()">DONE</button></div>
   </div>
 </div>
 <canvas id="hc" style="display:none"></canvas>
@@ -162,31 +132,21 @@ const S = {
 function goTo(n) {
   const screens = ['home-screen', 'sc0', 'sc1', 'sc2', 'sc3', 'sc4'];
   const targetId = n === 'home' ? screens[0] : (typeof n === 'number' ? screens[n+1] : 'sc4');
-  
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(targetId).classList.add('active');
 
   const isHome = n === 'home';
-  const isArchive = n === 4;
   document.getElementById('global-header').style.display = isHome ? 'none' : 'flex';
-  document.getElementById('step-bar').style.display = (!isHome && !isArchive) ? 'flex' : 'none';
+  document.getElementById('step-bar').style.display = (typeof n === 'number' && n <= 3) ? 'flex' : 'none';
 
   if(n === 2) initCam(); else stopOverlay();
   if(n === 3) buildResult();
   if(n === 4) renderFrameAlbum();
-
-  if(typeof n === 'number' && n <= 3) {
-    document.querySelectorAll('.si').forEach((s, i) => {
-      s.classList.toggle('on', i === n);
-      s.classList.toggle('dn', i < n);
-    });
-  }
+  if(typeof n === 'number' && n <= 3) document.querySelectorAll('.si').forEach((s, i) => s.classList.toggle('on', i <= n));
 }
 
-/* Upload */
 document.getElementById('celebInput').addEventListener('change', e => {
   [...e.target.files].forEach(f => {
-    if (f.size > 2 * 1024 * 1024) return alert("2MB 이하 파일만 가능합니다.");
     const reader = new FileReader();
     reader.onload = (ev) => {
       const img = new Image();
@@ -198,41 +158,44 @@ document.getElementById('celebInput').addEventListener('change', e => {
 });
 
 function renderStrip() {
-  document.getElementById('celeb-strip').innerHTML = S.celebs.map(c => `<img src="${c.src}" style="height:50px; border:1px solid #333; border-radius:4px; margin-right:5px;">`).join('');
+  document.getElementById('celeb-strip').innerHTML = S.celebs.map(c => `<img src="${c.src}" style="height:50px; border-radius:4px; margin-right:5px;">`).join('');
 }
 
-/* Arrange Modal (Zoom/Drag) */
+/* 배치 로직 - 모바일 정밀도 강화 */
 function openSlotModal(idx) { S.modalSlot = idx; renderModalCanvas(); renderModalPicker(); document.getElementById('slot-modal').classList.add('open'); }
-function renderModalPicker() { document.getElementById('modal-picker').innerHTML = S.celebs.map((c, i) => `<img src="${c.src}" onclick="addToSlot(${i})" style="height:45px; border:1px solid #444; margin:0 5px; cursor:pointer;">`).join(''); }
+function renderModalPicker() { document.getElementById('modal-picker').innerHTML = S.celebs.map((c, i) => `<img src="${c.src}" onclick="addToSlot(${i})" style="height:45px; margin:0 5px; border:1px solid #444;">`).join(''); }
 function addToSlot(ci) { S.slots[S.modalSlot].push({ ci, x: 25, y: 10, w: 50 }); renderModalCanvas(); }
 
 function renderModalCanvas() {
-  const container = document.getElementById('slot-modal-canvas');
-  container.innerHTML = '';
+  const container = document.getElementById('slot-modal-canvas'); container.innerHTML = '';
   S.slots[S.modalSlot].forEach((item, i) => {
     const el = document.createElement('div');
     el.className = 'cdrag';
     el.style.cssText = `left:${item.x}%; top:${item.y}%; width:${item.w}%;`;
     const img = document.createElement('img'); img.src = S.celebs[item.ci].src;
-    el.appendChild(img);
-    container.appendChild(el);
+    el.appendChild(img); container.appendChild(el);
 
-    let sDist = 0, sW = 0;
-    el.onwheel = (e) => { e.preventDefault(); item.w = Math.max(5, Math.min(200, item.w + (e.deltaY > 0 ? -2 : 2))); el.style.width = item.w + '%'; };
-    
+    let sDist = 0, sW = 0, startX, startY;
     const move = (e) => {
       e.preventDefault();
       const rect = container.getBoundingClientRect();
+      const touch = e.touches ? e.touches[0] : e;
+      
       if (e.touches && e.touches.length === 2) {
         const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-        item.w = Math.max(5, Math.min(200, sW * (d / sDist))); el.style.width = item.w + '%';
+        item.w = Math.max(5, Math.min(200, sW * (d / sDist)));
+        el.style.width = item.w + '%';
       } else {
-        const cx = e.touches ? e.touches[0].clientX : e.clientX;
-        const cy = e.touches ? e.touches[0].clientY : e.clientY;
-        // % 좌표 정밀도 향상
-        item.x = ((cx - rect.left - (el.offsetWidth/2)) / rect.width) * 100;
-        item.y = ((cy - rect.top - (el.offsetHeight/2)) / rect.height) * 100;
-        el.style.left = item.x + '%'; el.style.top = item.y + '%';
+        // 절대 픽셀 기준이 아닌 캔버스 비율 기준으로 정확히 계산
+        const posX = ((touch.clientX - rect.left) / rect.width) * 100;
+        const posY = ((touch.clientY - rect.top) / rect.height) * 100;
+        item.x = posX - (item.w / 2);
+        item.y = posY - ((item.w * (img.naturalHeight / img.naturalWidth)) / 2 / (4/3 * 100) * 100); 
+        // 모바일 보정: Y축은 비율(4:3)에 맞춰 소수점 보정
+        item.y = posY - ( (item.w * (S.celebs[item.ci].img.height/S.celebs[item.ci].img.width)) * (rect.width/rect.height) / 2 );
+
+        el.style.left = item.x + '%';
+        el.style.top = item.y + '%';
       }
     };
     el.onmousedown = el.ontouchstart = (e) => {
@@ -254,53 +217,16 @@ function renderMiniSlot(idx) {
   });
 }
 
-/* Archive Logic */
-function saveFrameToAlbum() {
-  if (S.frameAlbum.length >= 5) return alert("저장 공간 가득 참(5개)");
-  S.frameAlbum.push({ id: Date.now(), celebsSrc: S.celebs.map(c => c.src), slots: JSON.parse(JSON.stringify(S.slots)) });
-  localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum));
-  alert("저장 완료!");
-}
-
-function renderFrameAlbum() {
-  const grid = document.getElementById('album-grid'); grid.innerHTML = '';
-  document.querySelector('#sc4 .card-lbl').textContent = `SAVED ARCHIVE (${S.frameAlbum.length}/5)`;
-  S.frameAlbum.forEach((f, idx) => {
-    const item = document.createElement('div');
-    item.style.cssText = "background:#000; padding:10px; border:1px solid #333; border-radius:4px;";
-    item.innerHTML = `
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; background:#111; padding:4px;">
-        ${f.slots.map(s => `<div style="aspect-ratio:4/3; background:#222; position:relative; overflow:hidden;">
-          ${s.map(el => `<img src="${f.celebsSrc[el.ci]}" style="position:absolute; left:${el.x}%; top:${el.y}%; width:${el.w}%;">`).join('')}
-        </div>`).join('')}
-      </div>
-      <div class="row btw mt">
-        <button class="btn btn-g" style="padding:5px; font-size:0.7rem;" onclick="deleteFrame(${idx}, event)">DEL</button>
-        <button class="btn btn-p" style="padding:5px; font-size:0.7rem; flex:1;">LOAD</button>
-      </div>`;
-    item.onclick = () => loadFrame(idx);
-    grid.appendChild(item);
-  });
-}
-
-async function loadFrame(idx) {
-  const f = S.frameAlbum[idx]; S.celebs = [];
-  for(let s of f.celebsSrc) { const i = new Image(); await new Promise(r=>{i.onload=r; i.src=s;}); S.celebs.push({img:i, src:s}); }
-  S.slots = JSON.parse(JSON.stringify(f.slots));
-  S.slots.forEach((_, i) => renderMiniSlot(i));
-  renderStrip(); goTo(2);
-}
-
-function deleteFrame(idx, e) { e.stopPropagation(); S.frameAlbum.splice(idx,1); localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum)); renderFrameAlbum(); }
-
-/* Shoot Logic */
-async function initCam() { const v = document.getElementById('video'); if (!S.stream) { S.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false }); v.srcObject = S.stream; } startOverlay(); }
+/* 카메라 & 촬영 */
+async function initCam() { const v = document.getElementById('video'); if (!S.stream) { S.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', aspectRatio: 4/3 }, audio: false }); v.srcObject = S.stream; } startOverlay(); }
 function startOverlay() {
   const oc = document.getElementById('cam-cv'), ctx = oc.getContext('2d'), v = document.getElementById('video');
   const step = () => { if(v.videoWidth) { 
     oc.width = v.videoWidth; oc.height = v.videoHeight; ctx.clearRect(0,0,oc.width,oc.height);
     S.slots[S.cur].forEach(item => { 
-      const cel = S.celebs[item.ci]; const w = oc.width * (item.w/100); const h = w * (cel.img.height/cel.img.width);
+      const cel = S.celebs[item.ci];
+      const w = oc.width * (item.w/100);
+      const h = w * (cel.img.height/cel.img.width);
       ctx.drawImage(cel.img, oc.width*(item.x/100), oc.height*(item.y/100), w, h);
     });
   } S.raf = requestAnimationFrame(step); };
@@ -309,7 +235,6 @@ function startOverlay() {
 function stopOverlay() { cancelAnimationFrame(S.raf); }
 
 async function shoot() {
-  if (S.cur >= 4) return;
   const cd = document.getElementById('cam-cd'); cd.textContent = '3'; cd.style.opacity = 1;
   for(let i=3; i>0; i--) { cd.textContent = i; await new Promise(r=>setTimeout(r, 600)); }
   cd.style.opacity = 0;
@@ -318,12 +243,12 @@ async function shoot() {
   ctx.save(); ctx.scale(-1, 1); ctx.drawImage(v, -hc.width, 0, hc.width, hc.height); ctx.restore();
   ctx.drawImage(document.getElementById('cam-cv'), 0, 0);
   S.shots[S.cur] = hc.toDataURL('image/jpeg', 0.9);
-  document.querySelectorAll('.th-box')[S.cur].innerHTML = `<img src="${S.shots[S.cur]}">`;
+  document.querySelectorAll('.th-box')[S.cur].innerHTML = `<img src="${S.shots[S.cur]}" style="width:100%">`;
   S.cur++; document.getElementById('shot-lbl').textContent = `${S.cur} / 4 SHOTS`;
   if(S.cur === 4) setTimeout(() => goTo(3), 500);
 }
 
-function reshot() { S.cur = 0; S.shots = [null,null,null,null]; document.querySelectorAll('.th-box').forEach(el => el.innerHTML = ''); document.getElementById('shot-lbl').textContent = `0 / 4 SHOTS`; goTo(2); }
+function reshot() { S.cur = 0; S.shots = [null,null,null,null]; document.querySelectorAll('.th-box').forEach(el => el.innerHTML = ''); goTo(2); }
 
 async function buildResult() {
   const wrap = document.getElementById('result-wrap'); wrap.innerHTML = '';
@@ -335,24 +260,39 @@ async function buildResult() {
     ctx.fillStyle = t.bg; ctx.fillRect(0, 0, canvas.width, canvas.height);
     for(let i=0; i<4; i++) { if(S.shots[i]) { const img = await new Promise(res => { const img = new Image(); img.onload=()=>res(img); img.src=S.shots[i]; }); ctx.drawImage(img, PAD, PAD + (i * (SH + GAP)), SW, SH); } }
     ctx.fillStyle = t.text; ctx.font = 'bold 20px Orbitron'; ctx.textAlign = 'center'; ctx.fillText('STUDIO BOOTH 4', FW/2, canvas.height - 40);
-    
     const div = document.createElement('div'); div.className = 'film-card';
-    const preview = document.createElement('canvas');
-    preview.width = FW; preview.height = canvas.height;
-    preview.getContext('2d').drawImage(canvas, 0, 0);
-    preview.style.width = "120px";
+    const preview = document.createElement('canvas'); preview.width = FW; preview.height = canvas.height;
+    preview.getContext('2d').drawImage(canvas, 0, 0); preview.style.width = "120px";
     div.appendChild(preview);
-    
-    div.addEventListener('click', () => {
-      document.querySelectorAll('.film-card').forEach(c => c.classList.remove('picked'));
-      div.classList.add('picked');
-      S.picked_data = canvas.toDataURL('image/jpeg', 0.9);
-      document.getElementById('btn-dl').disabled = false;
-    });
+    div.onclick = () => { document.querySelectorAll('.film-card').forEach(c => c.classList.remove('picked')); div.classList.add('picked'); S.picked_data = canvas.toDataURL('image/jpeg', 0.9); document.getElementById('btn-dl').disabled = false; };
     wrap.appendChild(div);
   }
 }
-function dlPicked() { if(!S.picked_data) return; const a = document.createElement('a'); a.download = 'booth4.jpg'; a.href = S.picked_data; a.click(); }
+function dlPicked() { const a = document.createElement('a'); a.download = 'booth4.jpg'; a.href = S.picked_data; a.click(); }
+
+function saveFrameToAlbum() {
+  if (S.frameAlbum.length >= 5) return alert("FULL");
+  S.frameAlbum.push({ id: Date.now(), celebsSrc: S.celebs.map(c => c.src), slots: JSON.parse(JSON.stringify(S.slots)) });
+  localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum));
+  alert("SAVED");
+}
+
+function renderFrameAlbum() {
+  const grid = document.getElementById('album-grid'); grid.innerHTML = '';
+  S.frameAlbum.forEach((f, idx) => {
+    const item = document.createElement('div'); item.style.cssText = "background:#000; padding:10px; border:1px solid #333; border-radius:4px;";
+    item.innerHTML = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; background:#111; padding:4px;">${f.slots.map(s => `<div style="aspect-ratio:4/3; background:#222; position:relative; overflow:hidden;">${s.map(el => `<img src="${f.celebsSrc[el.ci]}" style="position:absolute; left:${el.x}%; top:${el.y}%; width:${el.w}%;">`).join('')}</div>`).join('')}</div><div class="row btw mt"><button class="btn btn-g" style="padding:5px; font-size:0.7rem;" onclick="deleteFrame(${idx}, event)">DEL</button><button class="btn btn-p" style="padding:5px; font-size:0.7rem; flex:1;" onclick="loadFrame(${idx})">LOAD</button></div>`;
+    grid.appendChild(item);
+  });
+}
+async function loadFrame(idx) {
+  const f = S.frameAlbum[idx]; S.celebs = [];
+  for(let s of f.celebsSrc) { const i = new Image(); await new Promise(r=>{i.onload=r; i.src=s;}); S.celebs.push({img:i, src:s}); }
+  S.slots = JSON.parse(JSON.stringify(f.slots));
+  S.slots.forEach((_, i) => renderMiniSlot(i));
+  renderStrip(); goTo(2);
+}
+function deleteFrame(idx, e) { e.stopPropagation(); S.frameAlbum.splice(idx,1); localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum)); renderFrameAlbum(); }
 </script>
 </body>
 </html>
