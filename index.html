@@ -136,7 +136,7 @@ h1, h2, .logo, .btn, .card-lbl, #cam-cd { font-family: 'Gaegu', sans-serif; }
 <div class="app">
   <div id="flash"></div>
   <div class="hd" id="global-header">
-    <div class="logo" onclick="location.reload()">Soft Booth</div>
+    <div class="logo" onclick="location.reload()">Frame maker</div>
     <button class="btn btn-g" style="padding:10px 20px; font-size:0.9rem;" onclick="goTo('home')">HOME</button>
   </div>
 
@@ -464,7 +464,7 @@ async function buildResult() {
       for(let i=0; i<4; i++) { const img = await loadImg(S.shots[i]); const dx = PAD + (i % 2) * (SW + GAP), dy = PAD + Math.floor(i / 2) * (SH + GAP); ctx.drawImage(img, dx, dy, SW, SH); }
     }
     
-    ctx.fillStyle = t.text; ctx.font = '700 22px Gaegu'; ctx.textAlign = 'center'; ctx.fillText('SOFT BOOTH 4', FW/2, canvas.height - 30);
+    ctx.fillStyle = t.text; ctx.font = '700 22px Gaegu'; ctx.textAlign = 'center'; ctx.fillText('프레임메이커', FW/2, canvas.height - 30);
     
     const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
     
