@@ -2,34 +2,26 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>BOOTH 4 CUTS - FRAME ARCHIVE</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>BOOTH 4 CUTS - PRO BUILDER</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0a0a0a;
-  --card: #151515;
-  --accent: #ff007a;
-  --text: #ffffff;
-  --text-dim: #888888;
-  --border: #222222;
-  --sh: 0 0 20px rgba(255, 0, 122, 0.2);
+  --bg: #0a0a0a; --card: #151515; --accent: #ff007a; --text: #ffffff;
+  --text-dim: #888888; --border: #222222; --sh: 0 0 20px rgba(255, 0, 122, 0.2);
 }
-
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 .app { position:relative; z-index:1; max-width:500px; margin:0 auto; padding:20px 16px 100px; }
 
-/* Header & Steps */
+/* UI Elements */
 .hd { display:flex; justify-content:space-between; align-items:center; padding:10px 0 30px; }
 .logo { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; letter-spacing: 2px; color: var(--accent); text-shadow: var(--sh); cursor:pointer; }
 .hd-album { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
 .steps { display:flex; gap:8px; margin-bottom:24px; }
-.si { flex:1; height:4px; background:var(--border); border-radius:2px; transition: 0.3s; }
+.si { flex:1; height:4px; background:var(--border); border-radius:2px; }
 .si.on { background: var(--accent); box-shadow: var(--sh); }
 .si.dn { background: #444; }
-
-/* Common UI */
 .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 16px; }
 .card-lbl { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); margin-bottom: 16px; letter-spacing: 1px; text-transform: uppercase; }
 .btn { display: inline-flex; align-items: center; justify-content: center; padding: 14px 24px; border-radius: 4px; font-weight: 800; font-size: 0.9rem; border: none; cursor: pointer; transition: 0.2s; }
@@ -38,8 +30,7 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 .btn-p:disabled { background: #444; box-shadow: none; opacity: 0.5; cursor: not-allowed; }
 .btn-g { background: #222; color: #fff; border: 1px solid #333; }
 
-/* Upload & Camera */
-.upload-area { border: 2px dashed #333; padding: 40px 20px; text-align: center; border-radius: 8px; cursor: pointer; }
+/* Camera & Grid */
 #cam-wrap { position:relative; background:#000; border: 4px solid #222; border-radius: 4px; overflow: hidden; aspect-ratio: 4/3; }
 #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 #cam-cv { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
@@ -47,24 +38,16 @@ body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: var(
 .th-box { width:60px; height:45px; background:#222; border-radius:2px; overflow:hidden; border:1px solid #333; }
 .th-box img { width:100%; height:100%; object-fit:cover; }
 
-/* Modal & Drag */
+/* Modal & Drag/Zoom */
 .slot-modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:500; align-items:center; justify-content:center; padding:20px; }
 .slot-modal-bg.open { display:flex; }
 .slot-modal { background:var(--card); border:1px solid var(--border); border-radius:8px; width:100%; max-width:400px; padding:20px; }
-.slot-modal-canvas { width:100%; background:#000; position:relative; overflow:hidden; aspect-ratio:4/3; margin-bottom:15px; border: 1px solid #333; }
-.cdrag { position:absolute; user-select:none; touch-action:none; }
+.slot-modal-canvas { width:100%; background:#000; position:relative; overflow:hidden; aspect-ratio:4/3; margin-bottom:15px; border: 1px solid #333; touch-action: none; }
+.cdrag { position:absolute; user-select:none; transform-origin: center center; }
 .cdrag img { width:100%; display:block; pointer-events:none; }
 
-/* Screens */
 .screen { display:none; }
 .screen.active { display:block; }
-#result-wrap { display: flex; gap: 15px; overflow-x: auto; padding: 10px 0; }
-.film-card { flex-shrink: 0; border: 2px solid transparent; cursor: pointer; }
-.film-card.picked { border-color: var(--accent); }
-.album-item { background: #000; border: 1px solid #333; border-radius: 4px; padding: 10px; cursor: pointer; transition: 0.2s; }
-.album-item:hover { border-color: var(--accent); }
-
-input[type=file] { display:none; }
 .row { display:flex; gap:10px; align-items:center; }
 .btw { justify-content: space-between; }
 .center { justify-content: center; }
@@ -79,38 +62,34 @@ input[type=file] { display:none; }
   </div>
 
   <div class="steps">
-    <div class="si on" id="si0"></div>
-    <div class="si" id="si1"></div>
-    <div class="si" id="si2"></div>
-    <div class="si" id="si3"></div>
+    <div class="si on" id="si0"></div><div class="si" id="si1"></div><div class="si" id="si2"></div><div class="si" id="si3"></div>
   </div>
 
   <div class="screen active" id="sc0">
     <div class="card">
-      <div class="card-lbl">1. UPLOAD PNG/GIF</div>
+      <div class="card-lbl">1. UPLOAD ELEMENTS</div>
       <label for="celebInput">
-        <div class="upload-area">
-          <p style="font-weight:600;">클릭하여 이미지 업로드</p>
-          <p style="font-size:0.7rem; color:var(--text-dim); margin-top:8px;">최대 1.5MB 이하 권장 (GIF 지원)</p>
+        <div style="border: 2px dashed #333; padding: 40px 20px; text-align: center; border-radius: 8px; cursor: pointer;">
+          <p style="font-weight:600;">클릭하여 PNG/GIF 업로드</p>
         </div>
       </label>
       <input type="file" id="celebInput" accept="image/*" multiple>
       <div id="celeb-strip" class="row mt" style="overflow-x:auto; padding-bottom:10px;"></div>
-      <button class="btn btn-p mt" id="btn0" style="width:100%" disabled onclick="goTo(1)">프레임 배치하기 →</button>
+      <button class="btn btn-p mt" id="btn0" style="width:100%" disabled onclick="goTo(1)">배치하기 →</button>
     </div>
   </div>
 
   <div class="screen" id="sc1">
     <div class="card">
-      <div class="card-lbl">2. ARRANGE SLOTS</div>
+      <div class="card-lbl">2. ARRANGE & ZOOM (PINCH TO ZOOM)</div>
       <div id="frame-builder" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <div class="fslot" id="fs0" onclick="openSlotModal(0)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden; cursor:pointer;"></div>
-        <div class="fslot" id="fs1" onclick="openSlotModal(1)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden; cursor:pointer;"></div>
-        <div class="fslot" id="fs2" onclick="openSlotModal(2)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden; cursor:pointer;"></div>
-        <div class="fslot" id="fs3" onclick="openSlotModal(3)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden; cursor:pointer;"></div>
+        <div class="fslot" id="fs0" onclick="openSlotModal(0)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
+        <div class="fslot" id="fs1" onclick="openSlotModal(1)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
+        <div class="fslot" id="fs2" onclick="openSlotModal(2)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
+        <div class="fslot" id="fs3" onclick="openSlotModal(3)" style="border:1px solid #333; background:#000; aspect-ratio:4/3; position:relative; overflow:hidden;"></div>
       </div>
       <div class="row btw mt">
-        <button class="btn btn-g" onclick="saveFrameToAlbum()">프레임 저장</button>
+        <button class="btn btn-g" onclick="saveFrameToAlbum()">저장</button>
         <button class="btn btn-p" onclick="goTo(2)">촬영 시작 →</button>
       </div>
     </div>
@@ -131,7 +110,7 @@ input[type=file] { display:none; }
 
   <div class="screen" id="sc3">
     <div class="card">
-      <div class="card-lbl">SELECT YOUR FILM</div>
+      <div class="card-lbl">FILM RESULT</div>
       <div id="result-wrap"></div>
       <div class="row btw mt">
         <button class="btn btn-g" onclick="reshot()">RE-SHOOT</button>
@@ -142,18 +121,18 @@ input[type=file] { display:none; }
 
   <div class="screen" id="sc4">
     <div class="card">
-      <div class="card-lbl">SAVED FRAME ARCHIVE (0 / 5)</div>
+      <div class="card-lbl">SAVED ARCHIVE (0/5)</div>
       <div id="album-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
-      <button class="btn btn-g mt" style="width:100%" onclick="goTo(0)">새 프레임 만들기</button>
+      <button class="btn btn-g mt" style="width:100%" onclick="goTo(0)">NEW</button>
     </div>
   </div>
 </div>
 
 <div class="slot-modal-bg" id="slot-modal">
   <div class="slot-modal">
-    <div class="card-lbl">ARRANGE ELEMENTS</div>
+    <div class="card-lbl">DRAG TO MOVE / PINCH TO ZOOM</div>
     <div class="slot-modal-canvas" id="slot-modal-canvas"></div>
-    <div class="row center mt" id="modal-picker" style="overflow-x:auto; padding:10px 0;"></div>
+    <div class="row center mt" id="modal-picker" style="overflow-x:auto;"></div>
     <div class="row btw mt">
       <button class="btn btn-g" onclick="clearModalSlot()">CLEAR</button>
       <button class="btn btn-p" onclick="closeSlotModal()">DONE</button>
@@ -164,150 +143,145 @@ input[type=file] { display:none; }
 
 <script>
 const S = {
-  celebs: [],
-  slots: [[],[],[],[]],
-  shots: [null,null,null,null],
-  cur: 0,
-  modalSlot: null,
-  stream: null,
-  raf: null,
+  celebs: [], slots: [[],[],[],[]], shots: [null,null,null,null], cur: 0,
+  modalSlot: null, stream: null, raf: null,
   frameAlbum: JSON.parse(localStorage.getItem('booth_frame_album') || '[]')
 };
 
 function goTo(n) {
   document.querySelectorAll('.screen').forEach((s, i) => s.classList.toggle('active', i === n));
-  document.querySelectorAll('.si').forEach((s, i) => {
-    s.classList.toggle('on', i === n);
-    s.classList.toggle('dn', i < n);
-  });
+  document.querySelectorAll('.si').forEach((s, i) => { s.classList.toggle('on', i === n); s.classList.toggle('dn', i < n); });
   if(n === 2) initCam(); else stopOverlay();
   if(n === 3) buildResult();
   if(n === 4) renderFrameAlbum();
 }
 
-/* STEP 0: 업로드 (용량 체크 & Base64 저장) */
+/* Upload */
 document.getElementById('celebInput').addEventListener('change', e => {
   [...e.target.files].forEach(f => {
-    if (f.size > 1.5 * 1024 * 1024) {
-      alert(`${f.name} 파일이 너무 큽니다. (1.5MB 이하 권장)`);
-      return;
-    }
+    if (f.size > 1.5 * 1024 * 1024) return alert("1.5MB 이하만 가능합니다.");
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const src = ev.target.result;
       const img = new Image();
-      img.onload = () => {
-        S.celebs.push({ img, src });
-        renderStrip();
-        document.getElementById('btn0').disabled = false;
-      };
-      img.src = src;
+      img.onload = () => { S.celebs.push({ img, src: ev.target.result }); renderStrip(); document.getElementById('btn0').disabled = false; };
+      img.src = ev.target.result;
     };
     reader.readAsDataURL(f);
   });
 });
 
 function renderStrip() {
-  document.getElementById('celeb-strip').innerHTML = S.celebs.map(c => 
-    `<img src="${c.src}" style="height:60px; border:1px solid #333; border-radius:4px; margin-right:5px;">`
-  ).join('');
+  document.getElementById('celeb-strip').innerHTML = S.celebs.map(c => `<img src="${c.src}" style="height:50px; border:1px solid #333; border-radius:4px; margin-right:5px;">`).join('');
 }
 
-/* STEP 1: 프레임 저장 (5개 제한) */
-function saveFrameToAlbum() {
-  if (S.frameAlbum.length >= 5) {
-    alert("저장 공간이 가득 찼습니다 (최대 5개). 기존 프레임을 삭제해 주세요.");
-    return goTo(4);
-  }
-  if (S.slots.every(s => s.length === 0)) return alert("배치된 이미지가 없습니다.");
+/* Modal Drag & Pinch Zoom */
+function openSlotModal(idx) { S.modalSlot = idx; renderModalCanvas(); renderModalPicker(); document.getElementById('slot-modal').classList.add('open'); }
+function renderModalPicker() { document.getElementById('modal-picker').innerHTML = S.celebs.map((c, i) => `<img src="${c.src}" onclick="addToSlot(${i})" style="height:45px; border:1px solid #444; margin:0 5px; cursor:pointer;">`).join(''); }
+function addToSlot(ci) { S.slots[S.modalSlot].push({ ci, x: 25, y: 10, w: 50 }); renderModalCanvas(); }
 
-  try {
-    const frameData = {
-      id: Date.now(),
-      celebsSrc: S.celebs.map(c => c.src),
-      slots: JSON.parse(JSON.stringify(S.slots))
+function renderModalCanvas() {
+  const container = document.getElementById('slot-modal-canvas');
+  container.innerHTML = '';
+  
+  S.slots[S.modalSlot].forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = 'cdrag';
+    el.style.left = item.x + '%'; el.style.top = item.y + '%'; el.style.width = item.w + '%';
+    const img = document.createElement('img'); img.src = S.celebs[item.ci].src;
+    el.appendChild(img);
+    container.appendChild(el);
+
+    let startDist = 0, startW = 0;
+
+    // Mouse Wheel Zoom
+    el.onwheel = (e) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -2 : 2;
+      item.w = Math.max(5, Math.min(200, item.w + delta));
+      el.style.width = item.w + '%';
     };
-    S.frameAlbum.push(frameData);
-    localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum));
-    alert("프레임이 저장되었습니다!");
-  } catch (e) {
-    alert("용량 초과로 저장할 수 없습니다. 이미지를 줄여주세요.");
-  }
+
+    // Drag & Pinch Logic
+    const move = (e) => {
+      const rect = container.getBoundingClientRect();
+      if (e.touches && e.touches.length === 2) {
+        // Pinch Zoom
+        const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        item.w = Math.max(5, Math.min(200, startW * (d / startDist)));
+        el.style.width = item.w + '%';
+      } else {
+        // Drag
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        item.x = ((clientX - rect.left - (el.offsetWidth/2)) / rect.width) * 100;
+        item.y = ((clientY - rect.top - (el.offsetHeight/2)) / rect.height) * 100;
+        el.style.left = item.x + '%'; el.style.top = item.y + '%';
+      }
+    };
+
+    el.onmousedown = el.ontouchstart = (e) => {
+      if (e.touches && e.touches.length === 2) {
+        startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        startW = item.w;
+      }
+      document.onmousemove = document.ontouchmove = move;
+      document.onmouseup = document.ontouchend = () => { document.onmousemove = document.ontouchmove = null; };
+    };
+  });
 }
 
-/* STEP 4: 앨범 관리 */
-function renderFrameAlbum() {
-  const grid = document.getElementById('album-grid');
-  grid.innerHTML = '';
-  document.querySelector('#sc4 .card-lbl').textContent = `SAVED FRAME ARCHIVE (${S.frameAlbum.length} / 5)`;
+function closeSlotModal() { renderMiniSlot(S.modalSlot); document.getElementById('slot-modal').classList.remove('open'); }
+function clearModalSlot() { S.slots[S.modalSlot] = []; renderModalCanvas(); }
+function renderMiniSlot(idx) {
+  const fs = document.getElementById(`fs${idx}`); fs.innerHTML = '';
+  S.slots[idx].forEach(item => { 
+    const img = document.createElement('img'); img.src = S.celebs[item.ci].src; 
+    img.style.cssText = `position:absolute; left:${item.x}%; top:${item.y}%; width:${item.w}%;`;
+    fs.appendChild(img);
+  });
+}
 
+/* Save & Load */
+function saveFrameToAlbum() {
+  if (S.frameAlbum.length >= 5) return alert("저장 공간 가득 참(5개)");
+  const frameData = { id: Date.now(), celebsSrc: S.celebs.map(c => c.src), slots: JSON.parse(JSON.stringify(S.slots)) };
+  S.frameAlbum.push(frameData);
+  localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum));
+  alert("저장 완료!");
+}
+
+function renderFrameAlbum() {
+  const grid = document.getElementById('album-grid'); grid.innerHTML = '';
+  document.querySelector('#sc4 .card-lbl').textContent = `SAVED ARCHIVE (${S.frameAlbum.length}/5)`;
   S.frameAlbum.forEach((frame, idx) => {
-    const item = document.createElement('div');
-    item.className = 'album-item';
+    const item = document.createElement('div'); item.className = 'album-item';
     item.innerHTML = `
-      <div style="font-size:0.6rem; color:#888; margin-bottom:5px;">FRAME #${idx+1}</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:3px; background:#111; padding:3px; pointer-events:none;">
+      <div style="font-size:0.6rem; color:#666; margin-bottom:5px;">#${idx+1}</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; background:#111; padding:4px;">
         ${frame.slots.map(s => `<div style="aspect-ratio:4/3; background:#222; position:relative; overflow:hidden;">
           ${s.map(el => `<img src="${frame.celebsSrc[el.ci]}" style="position:absolute; left:${el.x}%; top:${el.y}%; width:${el.w}%;">`).join('')}
         </div>`).join('')}
       </div>
       <div class="row btw mt">
-        <button class="btn btn-g" style="padding:5px; font-size:0.7rem; flex:1;" onclick="deleteFrame(${idx}, event)">삭제</button>
-        <button class="btn btn-p" style="padding:5px; font-size:0.7rem; flex:2;">불러오기</button>
-      </div>
-    `;
+        <button class="btn btn-g" style="padding:5px; font-size:0.7rem;" onclick="deleteFrame(${idx}, event)">DEL</button>
+        <button class="btn btn-p" style="padding:5px; font-size:0.7rem; flex:1;">LOAD</button>
+      </div>`;
     item.onclick = () => loadFrame(idx);
     grid.appendChild(item);
   });
 }
 
 async function loadFrame(idx) {
-  const frame = S.frameAlbum[idx];
-  S.celebs = [];
-  for(let src of frame.celebsSrc) {
-    const img = await new Promise(res => { const i = new Image(); i.onload = () => res(i); i.src = src; });
-    S.celebs.push({ img, src });
-  }
-  S.slots = JSON.parse(JSON.stringify(frame.slots));
+  const f = S.frameAlbum[idx]; S.celebs = [];
+  for(let s of f.celebsSrc) { const i = new Image(); await new Promise(r=>{i.onload=r; i.src=s;}); S.celebs.push({img:i, src:s}); }
+  S.slots = JSON.parse(JSON.stringify(f.slots));
   S.slots.forEach((_, i) => renderMiniSlot(i));
-  renderStrip();
-  goTo(1);
+  renderStrip(); goTo(1);
 }
 
-function deleteFrame(idx, e) {
-  e.stopPropagation();
-  if(confirm("이 프레임을 삭제할까요?")) {
-    S.frameAlbum.splice(idx, 1);
-    localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum));
-    renderFrameAlbum();
-  }
-}
+function deleteFrame(idx, e) { e.stopPropagation(); S.frameAlbum.splice(idx,1); localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum)); renderFrameAlbum(); }
 
-/* --- 모달 이미지 배치 로직 --- */
-function openSlotModal(idx) { S.modalSlot = idx; renderModalCanvas(); renderModalPicker(); document.getElementById('slot-modal').classList.add('open'); }
-function renderModalPicker() { document.getElementById('modal-picker').innerHTML = S.celebs.map((c, i) => `<img src="${c.src}" onclick="addToSlot(${i})" style="height:50px; cursor:pointer; border:1px solid #444; margin: 0 5px;">`).join(''); }
-function addToSlot(ci) { S.slots[S.modalSlot].push({ ci, x: 25, y: 10, w: 50 }); renderModalCanvas(); }
-function renderModalCanvas() {
-  const container = document.getElementById('slot-modal-canvas'); container.innerHTML = '';
-  S.slots[S.modalSlot].forEach((item, i) => {
-    const el = document.createElement('div'); el.className = 'cdrag'; el.style.left = item.x + '%'; el.style.top = item.y + '%'; el.style.width = item.w + '%';
-    const img = document.createElement('img'); img.src = S.celebs[item.ci].src; el.appendChild(img); container.appendChild(el);
-    const move = (e) => {
-      const rect = container.getBoundingClientRect(); const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      item.x = ((clientX - rect.left - (el.offsetWidth/2)) / rect.width) * 100; item.y = ((clientY - rect.top - (el.offsetHeight/2)) / rect.height) * 100;
-      el.style.left = item.x + '%'; el.style.top = item.y + '%';
-    };
-    el.onmousedown = el.ontouchstart = (e) => { e.preventDefault(); document.onmousemove = document.ontouchmove = move; document.onmouseup = document.ontouchend = () => { document.onmousemove = document.ontouchmove = null; }; };
-  });
-}
-function closeSlotModal() { renderMiniSlot(S.modalSlot); document.getElementById('slot-modal').classList.remove('open'); }
-function clearModalSlot() { S.slots[S.modalSlot] = []; renderModalCanvas(); }
-function renderMiniSlot(idx) {
-  const fs = document.getElementById(`fs${idx}`); fs.innerHTML = '';
-  S.slots[idx].forEach(item => { const img = document.createElement('img'); img.src = S.celebs[item.ci].src; img.style.position = 'absolute'; img.style.left = item.x + '%'; img.style.top = item.y + '%'; img.style.width = item.w + '%'; fs.appendChild(img); });
-}
-
-/* --- 촬영 로직 --- */
+/* Shoot & Result (이전 로직 동일) */
 async function initCam() { const v = document.getElementById('video'); if (!S.stream) { S.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false }); v.srcObject = S.stream; } startOverlay(); }
 function startOverlay() {
   const oc = document.getElementById('cam-cv'), ctx = oc.getContext('2d'), v = document.getElementById('video');
@@ -329,7 +303,6 @@ async function shoot() {
 }
 function reshot() { S.cur = 0; S.shots = [null,null,null,null]; document.querySelectorAll('.th-box').forEach(el => el.innerHTML = ''); document.getElementById('shot-lbl').textContent = `0 / 4 SHOTS`; document.getElementById('btn-shoot').style.display = 'inline-flex'; document.getElementById('btn-done').style.display = 'none'; goTo(2); }
 
-/* --- 결과물 생성 --- */
 async function buildResult() {
   const wrap = document.getElementById('result-wrap'); wrap.innerHTML = '';
   const themes = [{bg:'#111', text:'#eee'}, {bg:'#fff', text:'#111'}];
