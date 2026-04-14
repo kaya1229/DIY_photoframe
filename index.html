@@ -220,7 +220,7 @@ document.getElementById('celebInput').onchange = e => {
     const reader = new FileReader();
     reader.onload = ev => {
       const img = new Image();
-      img.onload = () => { S.celebs.push({ img, src: ev.target.result }); renderStrip(); document.getElementById('btn1').disabled = false; };
+      img.onload = () => { S.celebs.push({ img, src: ev.target.result }); renderStrip(); };
       img.src = ev.target.result;
     };
     reader.readAsDataURL(f);
@@ -292,34 +292,64 @@ function saveFrameToAlbum() {
   S.frameAlbum.push({ mode: S.mode, ratio: S.camRatio, celebsSrc: S.celebs.map(c => c.src), slots: JSON.parse(JSON.stringify(S.slots)) });
   localStorage.setItem('booth_frame_album', JSON.stringify(S.frameAlbum)); alert("Saved!");
 }
+/* 4. Archive Preview & Logic - 4개 슬롯이 모두 보이도록 수정된 버전 */
 function renderFrameAlbum() {
-  const grid = document.getElementById('album-grid'); grid.innerHTML = '';
+  const grid = document.getElementById('album-grid'); 
+  grid.innerHTML = '';
   document.getElementById('archive-lbl').textContent = `ARCHIVE (${S.frameAlbum.length}/10)`;
+  
   S.frameAlbum.forEach((f, idx) => {
-    const item = document.createElement('div'); item.className = 'card'; item.style.padding = '10px';
+    const item = document.createElement('div'); 
+    item.className = 'card'; 
+    item.style.padding = '10px';
     
-    // Create Preview Element
+    // 프레임 전체를 감싸는 프리뷰 컨테이너
     const preview = document.createElement('div'); 
     preview.className = 'archive-preview'; 
     preview.style.aspectRatio = f.ratio;
     
-    // Draw small icons for each slot
-    f.slots[0].forEach(s => {
-      const img = document.createElement('img'); img.src = f.celebsSrc[s.ci];
-      img.style.cssText = `position:absolute; left:${s.x}%; top:${s.y}%; width:${s.w}%; opacity:0.8;`;
-      preview.appendChild(img);
+    // 모드(1x4 또는 2x2)에 맞춰 그리드 레이아웃 설정
+    preview.style.display = 'grid';
+    if(f.mode === 'v') {
+      preview.style.gridTemplateColumns = '1fr'; // 세로 한 줄 (1x4)
+    } else {
+      preview.style.gridTemplateColumns = '1fr 1fr'; // 가로 두 줄 (2x2)
+    }
+    preview.style.gap = '2px';
+    preview.style.background = '#222'; // 슬롯 사이의 간격 색상
+
+    // 저장된 모든 슬롯(4개)을 순회하며 작게 그림
+    f.slots.forEach((slotItems) => {
+      const miniSlot = document.createElement('div');
+      miniSlot.style.cssText = `position:relative; background:#000; aspect-ratio:${f.ratio}; overflow:hidden; border:0.5px solid #333;`;
+      
+      // 각 슬롯 안에 배치된 요소(스티커/이미지)들을 그림
+      slotItems.forEach(s => {
+        const img = document.createElement('img'); 
+        img.src = f.celebsSrc[s.ci];
+        img.style.cssText = `position:absolute; left:${s.x}%; top:${s.y}%; width:${s.w}%; opacity:0.8;`;
+        miniSlot.appendChild(img);
+      });
+      preview.appendChild(miniSlot);
     });
 
     item.appendChild(preview);
+
+    // 하단 정보 텍스트
     const info = document.createElement('div');
-    info.style.cssText = 'font-size:0.6rem; color:#888; margin-bottom:8px;';
+    info.style.cssText = 'font-size:0.6rem; color:#888; margin-bottom:8px; margin-top:8px;';
     info.textContent = `${f.mode.toUpperCase()} FRAME ${idx+1}`;
     item.appendChild(info);
     
-    const row = document.createElement('div'); row.className = 'row';
-    row.innerHTML = `<button class="btn btn-p" style="flex:1; padding:8px; font-size:0.7rem;" onclick="loadFrame(${idx})">LOAD</button>
-                     <button class="btn btn-g" style="flex:1; padding:8px; font-size:0.7rem;" onclick="deleteFrame(${idx})">DEL</button>`;
+    // 버튼 그룹 (LOAD, DEL)
+    const row = document.createElement('div'); 
+    row.className = 'row';
+    row.innerHTML = `
+      <button class="btn btn-p" style="flex:1; padding:8px; font-size:0.7rem;" onclick="loadFrame(${idx})">LOAD</button>
+      <button class="btn btn-g" style="flex:1; padding:8px; font-size:0.7rem;" onclick="deleteFrame(${idx})">DEL</button>
+    `;
     item.appendChild(row);
+    
     grid.appendChild(item);
   });
 }
